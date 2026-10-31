@@ -1,10 +1,26 @@
 # OpenTerminal
 
-OpenTerminal é um cliente SSH e Telnet local-first para Linux, Windows e Android, feito para quem
-vive em equipamento de rede (OLT, BNG, switch, Mikrotik). Ele reúne terminal SSH, Telnet e local,
-cofre criptografado, organização de hosts e credenciais, SFTP, encaminhamento de portas, realce de
-saída de rede (portas PON, serial e sinal da ONU, alarmes) e perfis de terminal, construído com Go,
-Wails e React.
+## 📖 Sobre o Projeto
+
+O OpenTerminal é um programa pensado para centralizar seus acessos remotos (SSH e Telnet) de forma
+organizada e sincronizada entre Windows, Linux e Android.
+
+Baseado no OpenHost de Emerson Ricardo, o OpenTerminal nasce da necessidade de ter um gerenciador de
+conexões simples, multiplataforma e que mantenha seus hosts sempre sincronizados — sem depender de
+ferramentas pesadas ou pagas.
+
+## ✨ Funcionalidades
+
+- 🔐 Gerenciamento centralizado de conexões SSH e Telnet
+- 🔄 Sincronização entre dispositivos (Windows, Linux e Android) pelo Google Drive
+- 🗂️ Organização por grupos e subgrupos
+- 🔎 Busca rápida por nome, endereço ou usuário, com os termos em qualquer ordem
+- 🖥️ Interface leve e intuitiva
+- 🌍 Multiplataforma — mesmo conjunto de dados em todos os sistemas
+- 🔑 Suporte a chaves SSH e credenciais
+- 📦 Armazenamento local criptografado (Argon2id + XChaCha20-Poly1305), com opção de sincronização
+- 🎨 Realce para equipamentos de rede: portas PON, serial e sinal da ONU, alarmes da OLT
+- 📁 SFTP e encaminhamento de portas
 
 **[Baixar a última versão](https://github.com/edsondamacena/OpenTerminal/releases/latest)** —
 `.deb` para Linux, `.apk` para Android e instalador para Windows. O botão **Atualizar** em
