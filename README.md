@@ -29,7 +29,7 @@ Configurações → Sobre busca a versão nova aqui e só instala se o arquivo c
 ## Créditos
 
 O OpenTerminal é um fork do **[OpenHost](https://github.com/EmersonRicard0/Openhost)**, criado por
-**Emerson** (EmersonRicard0), feito com a autorização dele (ver [AUTORIZACAO.md](AUTORIZACAO.md)).
+**Emerson**.
 O mérito da base do projeto é dele. As capturas abaixo ainda são da versão original.
 
 ![Terminal SSH com a lista de hosts](docs/screenshots/02-terminal-ssh.png)
