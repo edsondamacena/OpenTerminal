@@ -1,0 +1,129 @@
+/* Barra de status no rodapé (FR-172). */
+.bar {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  padding: 0 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 22px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.item svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.item:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.item:disabled {
+  cursor: default;
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pad {
+  padding: 0 8px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+
+.dot[data-state='connected'] {
+  background: var(--success);
+}
+
+.dot[data-state='connecting'],
+.dot[data-state='authenticating'],
+.dot[data-state='awaitingHostKey'],
+.dot[data-state='awaitingPrompt'] {
+  background: var(--warning);
+}
+
+.dot[data-state='disconnected'],
+.dot[data-state='error'] {
+  background: var(--danger);
+}
+
+.latency {
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.latency[data-level='good'] {
+  color: var(--success);
+}
+
+.latency[data-level='slow'] {
+  color: var(--warning);
+}
+
+.latency[data-level='bad'] {
+  color: var(--danger);
+}
+
+/* Celular: barra mais baixa e texto menor (login@ip e estado), para sobrar altura ao console. */
+[data-mobile] .bar {
+  height: 19px;
+  padding: 0 3px;
+  font-size: 9.5px;
+}
+
+[data-mobile] .item {
+  gap: 4px;
+  height: 16px;
+  padding: 0 4px;
+}
+
+[data-mobile] .item svg {
+  width: 10px;
+  height: 10px;
+}

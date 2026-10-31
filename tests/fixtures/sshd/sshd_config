@@ -1,0 +1,21 @@
+Port 22
+HostKey /etc/ssh/ssh_host_ed25519_key
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication yes
+KbdInteractiveAuthentication yes
+UsePAM yes
+AllowTcpForwarding yes
+X11Forwarding no
+PrintMotd no
+Subsystem sftp internal-sftp
+
+Match User pwuser
+  AuthenticationMethods password
+
+Match User keyuser
+  AuthenticationMethods publickey
+
+# Prompts enviados pelo servidor via keyboard-interactive (PAM).
+Match User kbuser
+  AuthenticationMethods keyboard-interactive

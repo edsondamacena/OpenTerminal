@@ -1,0 +1,167 @@
+/* Barra lateral (FR-167): a largura vem da coluna do grid em app.module.css. */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.full {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  /* Largura fixa: durante a transição a lista é cortada, não espremida. */
+  width: 272px;
+  animation: fade-in var(--motion-base) var(--ease-standard);
+}
+
+.full[hidden] {
+  display: none;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  width: 56px;
+  padding: 10px 0;
+  animation: fade-in var(--motion-base) var(--ease-standard);
+}
+
+.railButton {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.railButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.railButton:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.railButton:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.railButton:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.railButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.tooltip {
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: var(--layer-menu);
+  animation: fade-in var(--motion-fast) var(--ease-standard);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Celular: a lista ocupa a largura toda; terminais abertos e "Novo terminal" no topo. */
+.mobileTerminals {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobileTitle {
+  margin: 8px 8px 2px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mobileRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+}
+
+.mobileRow:active {
+  background: var(--selected);
+}
+
+.mobileRow svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--focus);
+}
+
+.mobileLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobileDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+
+.mobileDot[data-live] {
+  background: var(--success, #3fb950);
+}
+
+[data-mobile] .full {
+  width: 100%;
+}

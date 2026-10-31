@@ -1,0 +1,392 @@
+/* Página de configurações (FR-168): cobre o painel do terminal, que segue montado por baixo. */
+.page {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-solid);
+  overflow: hidden;
+  animation: page-in var(--motion-base) var(--ease-emphasized);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px 12px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+.autosave {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 10px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+/* Indicador que desliza até a seção ativa (FR-166). */
+.nav[data-indicator]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: var(--indicator-size);
+  border-radius: 8px;
+  background: var(--selected);
+  transform: translateY(var(--indicator-offset));
+  transition:
+    transform var(--motion-base) var(--ease-emphasized),
+    height var(--motion-base) var(--ease-emphasized);
+  pointer-events: none;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.navItem:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.navItem[aria-current='page'] {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.navItem[aria-current='page']:hover {
+  background: transparent;
+}
+
+.navItem:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 560px;
+  padding: 22px 28px 32px;
+  overflow-y: auto;
+  animation: section-in var(--motion-base) var(--ease-standard);
+}
+
+.content.wide {
+  max-width: 920px;
+}
+
+.content.medium {
+  max-width: 720px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group + .group {
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.group p {
+  margin: 0;
+}
+
+.hint,
+.notice {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.notice {
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.appName {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Atalhos remapeáveis (FR-173). */
+.shortcutList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shortcutRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, auto) minmax(120px, auto);
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  border-top: 1px solid var(--border);
+}
+
+.shortcutName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcutRow[data-changed] .shortcutName::after {
+  content: '•';
+  margin-left: 6px;
+  color: var(--accent);
+}
+
+.shortcutKeys,
+.shortcutKeysStatic {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-self: start;
+}
+
+.shortcutKeys {
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.shortcutKeys:hover {
+  border-color: var(--border);
+  background: var(--hover);
+}
+
+.shortcutKeys:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.shortcutKeysStatic {
+  padding: 4px 6px;
+}
+
+.shortcutOff {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.shortcutActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.recorderWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.recorder {
+  padding: 6px 10px;
+  border: 1px dashed var(--accent);
+  border-radius: 7px;
+  background: var(--input-background);
+  color: var(--text-secondary);
+  font-size: 12px;
+  outline: none;
+  animation: recorder-pulse 1.4s var(--ease-standard) infinite;
+}
+
+@keyframes recorder-pulse {
+  50% {
+    border-color: var(--border);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recorder {
+    animation: none;
+  }
+}
+
+.recorderProblem {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: start;
+  gap: 4px 6px;
+  max-width: 360px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Mensagem sem ícone ocupa a linha toda. */
+.recorderProblem > :only-child {
+  grid-column: 1 / -1;
+}
+
+.recorderProblem svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  color: var(--warning);
+}
+
+.recorderProblem > button {
+  grid-column: 2;
+  justify-self: start;
+  margin-left: -8px;
+}
+
+.subTitle {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--input-background);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes section-in {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: var(--inset-swatch);
+}
+
+/* Celular: seções numa faixa rolável no topo e o conteúdo na largura toda (lado a lado, cada
+   metade ficava estreita demais para ler). */
+[data-mobile] .body {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+[data-mobile] .nav {
+  flex-direction: row;
+  gap: 4px;
+  padding: 8px 10px;
+  border-right: 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+[data-mobile] .nav[data-indicator]::before {
+  display: none;
+}
+
+[data-mobile] .navItem {
+  flex: none;
+  height: 36px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+[data-mobile] .navItem[aria-current='page'] {
+  background: var(--selected);
+}
+
+[data-mobile] .content {
+  max-width: none;
+  padding: 16px 14px 28px;
+  /* A amostra fixa da seção Terminal se alinha a este recuo. */
+  --ts-pad-top: 16px;
+  --ts-pad-x: 14px;
+}
+
+[data-mobile] .shortcutRow {
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 6px 0;
+}
+
+[data-mobile] .header {
+  padding: 8px 12px 8px 8px;
+}

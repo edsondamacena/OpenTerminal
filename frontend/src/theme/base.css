@@ -1,0 +1,44 @@
+/* Tokens que não mudam com o modo (FR-031): fontes, anéis de foco e sombras compostas.
+   As cores de cada modo vêm de tokens.ts (aplicadas em :root por apply.ts); aqui elas só são
+   combinadas. Fora de frontend/src/theme, o CSS usa apenas var(--…) (scripts/check-tokens.mjs). */
+:root {
+  --font-ui: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  /* JetBrains Mono vem embutida; as outras cobrem o caso raro de ela não carregar. */
+  --font-mono: 'JetBrains Mono', 'Cascadia Mono', Consolas, monospace;
+
+  /* Anéis de foco e seleção em volta do controle. */
+  --ring-focus: 0 0 0 3px var(--accent-soft);
+  --ring-focus-thin: 0 0 0 2px var(--accent-soft);
+  --ring-focus-wide: 0 0 0 4px var(--accent-soft);
+  --ring-selected: 0 0 0 2px var(--panel-solid), 0 0 0 4px var(--accent);
+  --ring-success: 0 0 0 3px color-mix(in srgb, var(--success) 22%, transparent);
+
+  /* Contornos internos (não mudam o tamanho do elemento). */
+  --inset-accent: inset 0 0 0 2px var(--accent);
+  --inset-accent-soft: inset 0 0 0 1px var(--accent-soft);
+  --inset-border: inset 0 0 0 1px var(--border);
+  --inset-accent-left: inset 2px 0 0 var(--accent);
+  /* Borda de amostra de cor: cinza médio, visível sobre qualquer cor e nos dois temas. */
+  --inset-swatch: inset 0 0 0 1px rgba(127, 127, 127, 0.25);
+
+  /* Elevação. */
+  --shadow-small: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --shadow-medium: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --shadow-accent: 0 4px 14px var(--accent-soft);
+  --shadow-primary: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 4px 14px var(--accent-soft);
+
+  /* Véu atrás de diálogos e da paleta. */
+  --scrim: rgba(0, 0, 0, 0.35);
+  --scrim-strong: rgba(0, 0, 0, 0.45);
+
+  /* Pastilha de avatar: texto branco sobre o matiz do host (ver Avatar.tsx). */
+  --avatar-text: #ffffff;
+  --avatar-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --avatar-text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+/* O WebView2 (Edge) desenha o próprio olho de revelar em campos de senha; o TextField já tem o nosso. */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

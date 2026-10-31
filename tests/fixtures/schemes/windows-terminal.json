@@ -1,0 +1,11 @@
+{
+  "name": "Fixture WT",
+  "foreground": "#F0F0F0",
+  "background": "#101010",
+  "cursorColor": "#ABCDEF",
+  "selectionBackground": "#22334488",
+  "black": "#000000", "red": "#CC0000", "green": "#00CC00", "yellow": "#CCCC00",
+  "blue": "#0000CC", "purple": "#CC00CC", "cyan": "#00CCCC", "white": "#CCCCCC",
+  "brightBlack": "#555555", "brightRed": "#FF5555", "brightGreen": "#55FF55", "brightYellow": "#FFFF55",
+  "brightBlue": "#5555FF", "brightPurple": "#FF55FF", "brightCyan": "#55FFFF", "brightWhite": "#FFFFFF"
+}

@@ -1,0 +1,178 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Camadas: menus sempre acima de diálogos e do terminal; toasts acima de tudo. */
+  --layer-dialog: 100;
+  --layer-menu: 200;
+  --layer-toast: 300;
+
+  /* Movimento (FR-170): no máximo 250 ms. */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Linux (WebKitGTK): movimento mais curto e sem desfoque de fundo, que lá custa caro para
+   compor e deixa a interface com cara de atrasada. */
+:root[data-platform='linux'] {
+  --motion-fast: 60ms;
+  --motion-base: 90ms;
+  --motion-slow: 120ms;
+}
+
+:root[data-platform='linux'] * {
+  backdrop-filter: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+    --motion-slow: 0ms;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  /* Transparente para o acrílico da janela aparecer; no modo sólido o próprio
+     BrowserWindow tem cor de fundo opaca. */
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+:root[data-mode='solid-dark'] body,
+:root[data-mode='solid-light'] body,
+:root[data-mode='high-contrast'] body {
+  background: var(--surface-glass);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* Barras de rolagem finas e discretas. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 10px;
+  background: var(--border) padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary) padding-box;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Superfície de vidro: fundo translúcido + borda de 1 px com gradiente (brilho). */
+.glass {
+  background: var(--surface-glass);
+}
+
+/* Só desenha a borda: quem usa a classe já é posicionado (fixed/absolute/relative) pelo próprio
+   componente. Definir `position` aqui quebrava menus `position: fixed` (bug 4). */
+.glass-edge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(black 0 0) content-box,
+    linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.raised {
+  background: var(--surface-raised);
+  /* O que fica por trás (texto do terminal) vira borrão e não compete com o conteúdo. */
+  backdrop-filter: blur(24px) saturate(140%);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.solid {
+  background: var(--panel-solid);
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Área arrastável da barra de título própria (propriedade CSS lida pelo runtime do Wails). */
+.drag {
+  --wails-draggable: drag;
+}
+
+.no-drag {
+  --wails-draggable: no-drag;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+:root[data-mode='high-contrast'] .glass-edge::before {
+  background: CanvasText;
+}

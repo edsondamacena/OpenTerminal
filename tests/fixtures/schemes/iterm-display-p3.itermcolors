@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+  <key>Name</key><string>iTerm Display P3</string>
+  <key>Foreground Color</key><dict><key>Color Space</key><string>Display P3</string><key>Red Component</key><real>0.8</real><key>Green Component</key><real>0.4</real><key>Blue Component</key><real>0.2</real></dict>
+  <key>Background Color</key><dict><key>Color Space</key><string>Display P3</string><key>Red Component</key><real>0</real><key>Green Component</key><real>0</real><key>Blue Component</key><real>0</real></dict>
+</dict></plist>

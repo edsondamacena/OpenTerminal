@@ -1,0 +1,114 @@
+.fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 48px 24px 24px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(460px, 100%);
+  padding: 32px;
+  border-radius: 18px;
+  animation: card-in var(--motion-slow) var(--ease-standard);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.brand {
+  display: flex;
+  filter: drop-shadow(0 8px 20px var(--accent-soft));
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+}
+
+.intro {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.notice {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--warning) 60%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--warning) 9%, transparent);
+}
+
+.notice strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.notice p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.noticeIcon {
+  flex: none;
+  color: var(--warning);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panelIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--accent-gradient);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-accent);
+}
+
+.linkButton {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+}

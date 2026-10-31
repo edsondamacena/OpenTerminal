@@ -1,0 +1,25 @@
+/* Gerado por brand/export_app_tokens.py a partir de brand/brand.json. Não edite à mão. */
+:root {
+  --brand-preto-piano: #050505;
+  --brand-laca: #0b0b0b;
+  --brand-superficie: #171717;
+  --brand-grafite: #1e2026;
+  --brand-nevoa: #f5f5f5;
+  --brand-cinza: #a6a6a6;
+  --brand-papel: #f3f3f1;
+  --brand-branco: #ffffff;
+  --brand-tinta: #111111;
+  --brand-chumbo: #4a4a4a;
+  --brand-laranja-openterminal: #fd7b17;
+  --brand-laranja-profundo: #b04e06;
+  --brand-perigo: #ff7b7b;
+  --brand-perigo-profundo: #c4322b;
+  --brand-aviso: #f0b955;
+  --brand-aviso-profundo: #9a6400;
+  --brand-sucesso: #4fd18b;
+  --brand-sucesso-profundo: #1f7a46;
+  /* Logo: quadrado grafite, anel branco e chevron laranja. */
+  --brand-tile: #1e2026;
+  --brand-ring: #ffffff;
+  --brand-chevron: #fd7b17;
+}

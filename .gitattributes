@@ -1,0 +1,7 @@
+* text=auto
+*.sh text eol=lf
+tests/fixtures/sshd/* text eol=lf
+tests/fixtures/sshd-legacy/* text eol=lf
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf

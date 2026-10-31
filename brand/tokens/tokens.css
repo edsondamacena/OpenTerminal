@@ -1,0 +1,38 @@
+:root {
+  --font-display: "Segoe UI Variable Display", 'Segoe UI', system-ui, sans-serif;
+  --font-body: "Segoe UI Variable Text", 'Segoe UI', system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", 'Cascadia Mono', Consolas, monospace;
+  --background: #F3F3F1;
+  --foreground: #111111;
+  --muted-foreground: #4A4A4A;
+  --card: #171717;
+  --card-foreground: #F5F5F5;
+  --primary: #FD7B17;
+  --primary-foreground: #0B0B0B;
+  --secondary: #1E2026;
+  --secondary-foreground: #F5F5F5;
+  --destructive: #FF7B7B;
+  --destructive-foreground: #0B0B0B;
+  --accent: #FD7B17;
+  --success: #4FD18B;
+  --pending: #F0B955;
+  --line: var(--foreground);  /* bevel border/shadow; inside cards it becomes --card-foreground */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --radius-Controle: 8px;
+  --radius-Cartão: 10px;
+  --radius-Elevado: 14px;
+}
+.dark {
+  --background: #0B0B0B;
+  --foreground: #F5F5F5;
+  --muted-foreground: #A6A6A6;
+}
+.card, [data-surface] { --line: var(--card-foreground); }
+.Plano { border-radius: 8px; border: Truepx solid var(--line); box-shadow: 0 0px 0px rgb(0 0 0 / .15); }
+.Elevado { border-radius: 14px; border: Falsepx solid var(--line); box-shadow: 0 18px 54px rgb(0 0 0 / .15); }

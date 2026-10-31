@@ -1,0 +1,251 @@
+.view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+
+.bannerText {
+  flex: 1;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.upIcon {
+  transform: rotate(-90deg);
+}
+
+.crumbs {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+}
+
+.crumbButton {
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.crumbButton:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.crumbButton[aria-current='location'] {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.crumbSep {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.tableWrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-solid);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.table td {
+  padding: 5px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row {
+  cursor: default;
+}
+
+.row:hover {
+  background: var(--hover);
+}
+
+.row[aria-selected='true'] {
+  background: var(--selected);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.colName {
+  width: auto;
+}
+
+.colName > * {
+  vertical-align: middle;
+}
+
+.colSize {
+  width: 100px;
+  text-align: right;
+}
+
+.table th.colSize {
+  text-align: right;
+}
+
+.colDate {
+  width: 150px;
+}
+
+.colType {
+  width: 90px;
+  color: var(--text-secondary);
+}
+
+.icon {
+  flex: none;
+  margin-right: 8px;
+  color: var(--text-secondary);
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 16px;
+  color: var(--text-secondary);
+}
+
+.transfers {
+  max-height: 34%;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.transfersHeader {
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+}
+
+.transfersTitle {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.transferList {
+  margin: 0;
+  padding: 0 10px 8px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.transfer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.transferMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.transferLine {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.transferState,
+.transferBytes {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.transfer[data-state='failed'] .transferState {
+  color: var(--danger);
+}
+
+.progress {
+  height: 4px;
+  margin: 4px 0 2px;
+  border-radius: 2px;
+  background: var(--hover);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--motion-fast) linear;
+}
+
+.transfer[data-state='failed'] .progressFill,
+.transfer[data-state='cancelled'] .progressFill {
+  background: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressFill {
+    transition: none;
+  }
+}

@@ -1,0 +1,15 @@
+Port 22
+HostKey /etc/ssh/ssh_host_rsa_key
+PermitRootLogin no
+PasswordAuthentication yes
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+X11Forwarding no
+PrintMotd no
+
+# Só algoritmos legados: um cliente com as listas modernas não encontra nada em comum.
+KexAlgorithms diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+Ciphers aes128-cbc,3des-cbc
+MACs hmac-sha1
+HostKeyAlgorithms ssh-rsa
+PubkeyAcceptedAlgorithms ssh-rsa

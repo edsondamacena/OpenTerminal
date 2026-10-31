@@ -1,0 +1,21 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "OpenTerminal",
+  "outputfilename": "openterminal",
+  "frontend:dir": "frontend",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "wailsjsdir": "./frontend",
+  "author": {
+    "name": "emerson"
+  },
+  "info": {
+    "productName": "OpenTerminal",
+    "productVersion": "2.1.0",
+    "companyName": "",
+    "copyright": "© 2026 OpenTerminal",
+    "comments": "Cliente SSH local-first com cofre criptografado"
+  }
+}

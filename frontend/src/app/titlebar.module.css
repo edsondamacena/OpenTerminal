@@ -1,0 +1,84 @@
+.titleBar {
+  grid-area: title;
+  display: flex;
+  align-items: stretch;
+  height: 40px;
+  min-width: 0;
+  padding-left: 14px;
+}
+
+.leading {
+  display: flex;
+  align-items: center;
+  margin: 0 6px 0 -8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.appName {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.spacer {
+  flex: 1;
+  min-width: 16px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 8px;
+}
+
+.windowControls {
+  display: flex;
+  align-items: stretch;
+}
+
+/* Mesmas medidas dos botões nativos do Windows 11. */
+.control {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.control:hover {
+  background: var(--hover);
+}
+
+.control:active {
+  background: var(--selected);
+}
+
+.close:hover {
+  background: var(--window-close-hover);
+  color: var(--window-close-text);
+}
+
+.close:active {
+  background: var(--window-close-active);
+  color: var(--window-close-text);
+}
+
+.control:focus-visible {
+  outline-offset: -2px;
+}
+
+/* No navegador a janela já tem barra de título com minimizar, maximizar e fechar. */
+:global(:root[data-shell='browser']) .windowControls {
+  display: none;
+}

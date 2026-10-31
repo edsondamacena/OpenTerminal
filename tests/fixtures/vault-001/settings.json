@@ -1,0 +1,12 @@
+{
+  "theme": "dark",
+  "terminalFontFamily": "Consolas, monospace",
+  "terminalFontSize": 15,
+  "window": {
+    "width": 1300,
+    "height": 820,
+    "x": 40,
+    "y": 30,
+    "maximized": false
+  }
+}

@@ -1,0 +1,52 @@
+﻿node_modules/
+out/
+dist/
+/build/bin/
+*.exe
+*.test
+*.out
+coverage/
+test-results/
+playwright-report/
+*.log
+.env*
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+tests/fixtures/keys/generated/
+
+# Fila local de trabalho entre agentes (Claude Code ⇄ Codex); ver specs/002-wails-migration/coordination.md
+.agente-queue/
+
+# Skill de terceiros sem licença declarada: reinstalar via skills-lock.json (npx skills add)
+.claude/skills/brand-kit/
+
+# Bindings gerados pelo wails dev (a ponte usa window.go diretamente)
+frontend/wailsjs/go/
+.agent-queue/
+
+# Gerados pelo wails build -nsis a cada execução
+build/windows/installer/tmp/
+build/windows/installer/wails_tools.nsh
+
+# Ferramentas locais dos agentes e medições avulsas
+.agents/
+specs/*/measure-last.json
+
+# Uso interno: ferramentas do Spec Kit e dos agentes, notas de coordenação e referências
+.claude/
+.specify/
+skills-lock.json
+specs/*/coordination.md
+docs/reference/
+frontend/package.json.md5
+
+# Chaves de assinatura Android
+*.jks
+*.keystore
+signing.properties
+
+# Gerados pelo scripts/gen-linux-icons.py
+/build/linux/

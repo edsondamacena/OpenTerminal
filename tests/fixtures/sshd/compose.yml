@@ -1,0 +1,35 @@
+name: openterminal-test
+
+services:
+  sshd:
+    build: .
+    image: openterminal-test-sshd
+    ports:
+      - '127.0.0.1:2222:22'
+    volumes:
+      - ../keys/generated:/keys:ro
+
+  # Serviço de eco acessível só pela rede interna (destino do port forwarding).
+  echo:
+    image: openterminal-test-sshd
+    entrypoint: ['socat', 'TCP-LISTEN:7000,fork,reuseaddr', 'EXEC:cat']
+    depends_on:
+      - sshd
+
+  # Só algoritmos legados (FR-121). Ver tests/fixtures/sshd-legacy.
+  sshd-legacy:
+    build: ../sshd-legacy
+    image: openterminal-test-sshd-legacy
+    ports:
+      - '127.0.0.1:2223:22'
+    volumes:
+      - ../keys/generated:/keys:ro
+
+  # Derruba conexões ociosas por 60 s (FR-120). Ver tests/fixtures/idle-killer.
+  idle-killer:
+    image: openterminal-test-sshd
+    entrypoint: ['socat', '-T', '60', 'TCP-LISTEN:22,fork,reuseaddr', 'TCP:sshd:22']
+    ports:
+      - '127.0.0.1:2224:22'
+    depends_on:
+      - sshd

@@ -1,0 +1,25 @@
+{
+  "name": "openterminal-tooling",
+  "version": "2.1.0",
+  "description": "Ferramentas de desenvolvimento e fixtures do OpenTerminal",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test:scripts": "node --test scripts/check-tokens.test.mjs",
+    "gen:test-keys": "node scripts/gen-test-keys.mjs",
+    "test:sshd:up": "node scripts/sshd.mjs up",
+    "test:sshd:down": "node scripts/sshd.mjs down",
+    "test:sshd:rotate-key": "node scripts/sshd.mjs rotate-key",
+    "seed:hosts": "node scripts/seed-hosts.mjs",
+    "fixture:vault-001": "node scripts/gen-vault-001.mjs",
+    "check:licenses": "node scripts/check-licenses.mjs",
+    "check:wails": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "ssh2": "1.17.0"
+  },
+  "allowScripts": {
+    "ssh2@1.17.0": true
+  }
+}

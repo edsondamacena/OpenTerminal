@@ -1,0 +1,15 @@
+node_modules/
+out/
+dist/
+build/
+coverage/
+test-results/
+playwright-report/
+package-lock.json
+.specify/
+.claude/
+specs/
+docs/
+tests/fixtures/keys/generated/
+third_party/
+frontend/wailsjs/

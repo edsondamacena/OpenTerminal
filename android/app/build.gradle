@@ -1,0 +1,49 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Assinatura de release (Play Store): chave de upload fora do git.
+def signingFile = new File(System.getenv('OPENTERMINAL_SIGNING') ?: "${System.getProperty('user.home')}/.config/OpenTerminal/release/signing.properties")
+def signing = new Properties()
+if (signingFile.exists()) signingFile.withInputStream { signing.load(it) }
+
+android {
+    namespace 'br.edson.openterminal'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'br.edson.openterminal'
+        minSdk 26
+        targetSdk 36
+        versionCode 3
+        versionName '2.1.0'
+        ndk { abiFilters 'arm64-v8a' }
+    }
+
+    signingConfigs {
+        release {
+            if (signing.storeFile) {
+                storeFile file(signing.storeFile)
+                storePassword signing.storePassword
+                keyAlias signing.keyAlias
+                keyPassword signing.keyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signing.storeFile ? signingConfigs.release : null
+        }
+    }
+
+    // O núcleo Go é um executável empacotado como lib*.so: precisa ser extraído para rodar.
+    packaging {
+        jniLibs { useLegacyPackaging = true }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

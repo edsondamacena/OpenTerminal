@@ -1,0 +1,311 @@
+.tabBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 42px;
+  padding: 0 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* A pílula da aba ativa desliza entre as abas (FR-166); sem medida, a própria aba a desenha. */
+.tabBar[data-indicator]::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: var(--indicator-size);
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-small);
+  transform: translateX(var(--indicator-offset));
+  transition:
+    transform var(--motion-base) var(--ease-emphasized),
+    width var(--motion-base) var(--ease-emphasized);
+  pointer-events: none;
+}
+
+.tabBar > * {
+  position: relative;
+}
+
+.tabBar[data-indicator] .tabActive {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Abas em pílula; a ativa ganha superfície elevada e borda. */
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 128px;
+  max-width: 220px;
+  height: 30px;
+  padding: 0 6px 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.tab:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.tabActive {
+  border-color: var(--border);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-small);
+}
+
+.tabActive:hover {
+  background: var(--surface-raised);
+}
+
+.tabTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabRename {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px solid var(--focus);
+  border-radius: 4px;
+  background: var(--panel-solid);
+  outline: none;
+}
+
+.state {
+  flex: none;
+  display: inline-flex;
+  color: var(--text-secondary);
+}
+
+.state[data-state='connected'] {
+  color: var(--success);
+}
+
+.state[data-state='connecting'],
+.state[data-state='authenticating'],
+.state[data-state='awaitingHostKey'],
+.state[data-state='awaitingPrompt'] {
+  color: var(--warning);
+}
+
+.state[data-state='connecting'] svg,
+.state[data-state='authenticating'] svg {
+  animation: tab-spin 1s linear infinite;
+}
+
+@keyframes tab-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.state[data-state='disconnected'],
+.state[data-state='error'] {
+  color: var(--danger);
+}
+
+.tabClose {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  opacity: 0.55;
+}
+
+.tabClose:hover {
+  opacity: 1;
+}
+
+.dropBefore {
+  box-shadow: var(--inset-accent-left);
+}
+
+.newTab {
+  align-self: center;
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Espaçamento e fundo vêm do perfil (FR-152). */
+.frame {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Sino visual (FR-177): véu claro sobre o terminal por um instante. */
+.bellFlash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--selected);
+  pointer-events: none;
+}
+
+.xterm {
+  flex: 1;
+  min-height: 0;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+
+.bannerIcon {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.bannerIconDanger {
+  color: var(--danger);
+}
+
+.bannerText {
+  flex: 1;
+}
+
+.fingerprint {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--input-background);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  user-select: text;
+  word-break: break-all;
+}
+
+.alert {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  color: var(--danger);
+}
+
+.alert p {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* Busca no terminal (FR-142): flutua no canto superior direito, sobre o terminal. */
+.searchBar {
+  position: absolute;
+  top: 8px;
+  right: 18px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 4px 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  animation: search-in var(--motion-fast) var(--ease-standard);
+}
+
+@keyframes search-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.searchInput {
+  width: 220px;
+  height: 28px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.searchInput:focus-visible {
+  outline: none;
+}
+
+.searchBar:focus-within {
+  border-color: var(--focus);
+}
+
+.searchInput[aria-invalid='true'] {
+  color: var(--danger);
+}
+
+.searchCount {
+  min-width: 92px;
+  padding: 0 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.searchInvalid {
+  color: var(--danger);
+}
+
+.searchToggle[aria-pressed='true'] {
+  background: var(--selected);
+  color: var(--accent);
+}
+
+.searchDivider {
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: var(--border);
+}
+
+.pastePreview {
+  max-height: 220px;
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--input-background);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  user-select: text;
+}

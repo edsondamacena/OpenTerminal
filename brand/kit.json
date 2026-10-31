@@ -1,0 +1,17 @@
+{
+  "name": "openterminal",
+  "mark": "mark.svg",
+  "out": "kit",
+  "wordmark": {"text": "OpenTerminal", "font": "fonts/JetBrainsMono-Bold.ttf", "tracking": 0,
+               "cap_ratio": 0.50, "gap_ratio": 0.28, "stacked_cap_ratio": 0.36, "stacked_gap_ratio": 0.22},
+  "colourways": {
+    "":          {"main": "#1E2026", "accent": "#C45A0A", "text": "#1E2026"},
+    "-reversed": {"main": "#FFFFFF", "accent": "#FD7B17", "text": "#FFFFFF"},
+    "-black":    {"*": "#000000"},
+    "-white":    {"*": "#FFFFFF"}
+  },
+  "app_icon": {"bg": "#1E2026", "roles": {"main": "#FFFFFF", "accent": "#FD7B17"}, "scale": 0.52, "radius": 0.24},
+  "favicon":  {"bg": "#1E2026", "roles": {"main": "#FFFFFF", "accent": "#FD7B17"}, "scale": 0.70, "radius": 0.24},
+  "theme_color": "#0B0B0B",
+  "mobile": false
+}

@@ -1,0 +1,7 @@
+{
+  "profiles": { "defaults": {} },
+  "schemes": [
+    { "name": "Settings A", "foreground": "#eeeeee", "background": "#111111" },
+    { "name": "Settings B", "foreground": "#dddddd", "background": "#222222" }
+  ]
+}

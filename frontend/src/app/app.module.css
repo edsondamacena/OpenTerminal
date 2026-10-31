@@ -1,0 +1,155 @@
+.root {
+  display: grid;
+  grid-template-areas:
+    'title title'
+    'sidebar main'
+    'status status';
+  grid-template-columns: 272px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  transition: grid-template-columns var(--motion-base) var(--ease-emphasized);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Todo filho de grid/flex pode encolher abaixo do conteúdo (sem faixas vazias nem cortes). */
+.root[data-sidebar='rail'] {
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+
+.root > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  padding: 0 10px 0 0;
+}
+
+.main > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspaceLayer {
+  display: contents;
+}
+
+.workspaceLayer[inert] {
+  visibility: hidden;
+}
+
+/* Painel do terminal/SFTP: cartão opaco com cantos arredondados sobre a moldura. */
+.content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 24px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--selected);
+  color: var(--focus);
+}
+
+.emptyTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.emptyHint {
+  max-width: 340px;
+  margin: 0;
+}
+
+.emptyAction {
+  margin-top: 14px;
+}
+
+.fullscreen {
+  display: grid;
+  grid-template-areas:
+    'title'
+    'body';
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.fullscreenBody {
+  grid-area: body;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Seletor composto: vence o `background` da classe global `.glass`. */
+.fullscreen.backdrop,
+.root.backdrop {
+  background-image: var(--backdrop-glow);
+}
+
+/* Celular: lista e console se revezam na mesma célula, em tela cheia. O que não está à vista
+   fica invisível (não display: none), para o xterm manter o tamanho e o histórico. */
+.root[data-mobile] {
+  grid-template-areas:
+    'title'
+    'body'
+    'status';
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.root[data-mobile] .sidebar,
+.root[data-mobile] .main {
+  grid-area: body;
+}
+
+.root[data-mobile] .main {
+  padding: 0;
+}
+
+.root[data-mobile][data-pane='list'] .main,
+.root[data-mobile][data-pane='terminal'] .sidebar {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.root[data-mobile] .content {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+}
