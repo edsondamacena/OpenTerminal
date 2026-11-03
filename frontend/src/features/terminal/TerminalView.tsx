@@ -52,8 +52,6 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
   const fitRef = useRef<FitAddon | null>(null);
   const fitNowRef = useRef<() => void>(() => undefined);
   const activeRef = useRef(active);
-  // O tipo da sessão não muda numa aba; lido por ref para não recriar o terminal.
-  const kindRef = useRef(tab.kind);
   const profile = useProfiles((p) => effectiveProfile(tab.hostId, p.global, p.overrides));
   const scheme = useProfiles((p) => schemeOf(p.schemes, profile.colorSchemeId));
   const unlocked = useVault((v) => v.status?.state === 'unlocked');
@@ -135,10 +133,7 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
       }
     });
     const onData = term.onData((data) => {
-      void api.write(
-        sessionId,
-        mapBackspace(applyCtrl(data), behavior()?.backspace ?? 'auto', kindRef.current),
-      );
+      void api.write(sessionId, mapBackspace(applyCtrl(data), behavior()?.backspace ?? 'del'));
     });
     const onBell = term.onBell(() => {
       ringBell(behavior()?.bell ?? 'visual', container.parentElement ?? container);

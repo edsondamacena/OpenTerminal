@@ -38,8 +38,7 @@ func (t *Terminal) Start(cols, rows int, out io.Writer) error {
 		return err
 	}
 	sess.Stdout, sess.Stderr = out, out
-	modes := ssh.TerminalModes{ssh.ECHO: 1, ssh.TTY_OP_ISPEED: 14400, ssh.TTY_OP_OSPEED: 14400}
-	if err := sess.RequestPty(t.client.term, rows, cols, modes); err != nil {
+	if err := sess.RequestPty(t.client.term, rows, cols, ptyModes()); err != nil {
 		_ = sess.Close()
 		return err
 	}
@@ -93,4 +92,11 @@ func (t *Terminal) Close() error {
 		_ = sess.Close()
 	}
 	return t.client.Close()
+}
+
+// ptyModes vai no pedido do PTY. VERASE = ^? (0x7f), que é o que o Backspace do terminal manda,
+// como fazem o OpenSSH e o PuTTY; sem ele, alguns servidores assumem ^H e o ^? vira "apagar para
+// frente".
+func ptyModes() ssh.TerminalModes {
+	return ssh.TerminalModes{ssh.ECHO: 1, ssh.VERASE: 0x7f, ssh.TTY_OP_ISPEED: 14400, ssh.TTY_OP_OSPEED: 14400}
 }

@@ -158,9 +158,9 @@ function GeneralSection({ settings }: { settings: Settings }) {
   );
 }
 
-const BACKSPACE: { value: BackspaceMode; label: string }[] = (
-  ['auto', 'del', 'ctrlh'] as const
-).map((value) => ({ value, label: t.settings.backspaceOptions[value] }));
+const BACKSPACE: { value: BackspaceMode; label: string }[] = (['del', 'ctrlh'] as const).map(
+  (value) => ({ value, label: t.settings.backspaceOptions[value] }),
+);
 
 const BELLS: { value: BellMode; label: string }[] = (['visual', 'sound', 'off'] as const).map(
   (value) => ({ value, label: t.settings.bellOptions[value] }),
