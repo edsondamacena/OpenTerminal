@@ -145,3 +145,33 @@ func TestExportAndReimportRoundTrip(t *testing.T) {
 		t.Fatalf("round-trip divergente:\n got %+v\nwant %+v", got, want)
 	}
 }
+
+func TestImportPlainArrayOfSchemes(t *testing.T) {
+	data := []byte(`[
+	  {"name":"A","foreground":"#ffffff","background":"#000000"},
+	  {"name":"B","foreground":"#eeeeee","background":"#111111","selectionBackground":"#ffffff38"}
+	]`)
+	res, err := Import(data, ".json", "pacote")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Imported) != 2 || res.Imported[0].Name != "A" || res.Imported[1].Name != "B" {
+		t.Fatalf("esperava A e B, veio %+v", res.Imported)
+	}
+	if _, err := Import([]byte(`[]`), ".json", "x"); err == nil {
+		t.Fatal("lista vazia deveria falhar")
+	}
+}
+
+func TestImportComboPackFromRepo(t *testing.T) {
+	res, err := ImportFile(filepath.Join("..", "..", "temas", "OpenTerminal Combo.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Imported) < 100 {
+		t.Fatalf("esperava mais de 100 esquemas, veio %d", len(res.Imported))
+	}
+	if len(res.Completed) != 0 {
+		t.Fatalf("o pacote deveria vir completo, faltou: %v", res.Completed)
+	}
+}

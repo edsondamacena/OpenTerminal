@@ -177,6 +177,61 @@
   height: 13px;
 }
 
+/* Card + lixeira: a lixeira fica fora do botão do card (botão dentro de botão é inválido). */
+.schemeItem {
+  position: relative;
+  display: flex;
+}
+
+.schemeItem > .schemeCard {
+  flex: 1;
+  min-width: 0;
+}
+
+.schemeRemove {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-background);
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.schemeItem:hover .schemeRemove,
+.schemeRemove:focus-visible {
+  opacity: 1;
+}
+
+.schemeRemove:hover {
+  border-color: var(--danger, #ff7b72);
+  color: var(--danger, #ff7b72);
+}
+
+.schemeRemove:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.schemeRemove svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (hover: none) {
+  .schemeRemove {
+    opacity: 1;
+  }
+}
+
 /* Lista de fontes: cada linha desenhada na própria fonte. */
 .fontList {
   display: flex;

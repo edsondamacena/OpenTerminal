@@ -7,6 +7,7 @@ import (
 
 	"openterminal/internal/apperr"
 	"openterminal/internal/model"
+	"openterminal/internal/schemes"
 	"openterminal/internal/validate"
 )
 
@@ -235,6 +236,18 @@ func (p *Profiles) RemoveScheme(id string) error {
 		if item.ID == id {
 			if item.Origin == model.SchemeBuiltin {
 				return invalid()
+			}
+			// O esquema aplicado no perfil global não trava a exclusão: o global volta para o
+			// esquema da marca. Perfis próprios de host continuam bloqueando (InUse).
+			global, err := p.store.GlobalProfile()
+			if err != nil {
+				return err
+			}
+			if global.ColorSchemeID == id {
+				global.ColorSchemeID = schemes.BrandSchemeID
+				if _, err := p.UpdateGlobal(global); err != nil {
+					return err
+				}
 			}
 			return p.store.DeleteColorScheme(id)
 		}

@@ -113,6 +113,8 @@ func TestExactlyOneGlobalAndHostOverrideLifecycle(t *testing.T) {
 	}
 }
 
+const brandID = "00000000-0000-4000-8000-000000000001"
+
 func TestBuiltinSchemeIsImmutableAndSchemeInUseCannotBeRemoved(t *testing.T) {
 	_, profiles := testProfiles(t)
 	schemes, err := profiles.ListSchemes()
@@ -134,7 +136,14 @@ func TestBuiltinSchemeIsImmutableAndSchemeInUseCannotBeRemoved(t *testing.T) {
 	if _, err := profiles.UpdateGlobal(global); err != nil {
 		t.Fatal(err)
 	}
-	wantCode(t, profiles.RemoveScheme(custom.ID), apperr.InUse)
+	// Aplicado só no global: exclui e o global volta para o esquema da marca.
+	if err := profiles.RemoveScheme(custom.ID); err != nil {
+		t.Fatalf("excluir o esquema aplicado no global = %v", err)
+	}
+	global, _ = profiles.GetGlobal()
+	if global.ColorSchemeID != brandID {
+		t.Fatalf("global ficou com %q, esperava o da marca %q", global.ColorSchemeID, brandID)
+	}
 }
 
 func TestImportedSchemeGetsUniqueNameAndUserDuplicatesFail(t *testing.T) {

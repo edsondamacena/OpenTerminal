@@ -34,6 +34,7 @@ import {
   Lock,
   LockOpen,
   Minus,
+  Trash2,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
@@ -99,6 +100,7 @@ export const RenameIcon = icon(Pencil);
 export const CheckIcon = icon(Check);
 export const CopyIcon = icon(ClipboardCopy);
 export const MinusIcon = icon(Minus);
+export const TrashIcon = icon(Trash2);
 export const BackIcon = icon(ArrowLeft);
 export const InfoIcon = icon(Info);
 export const PaletteIcon = icon(Palette);

@@ -62,13 +62,20 @@ func Import(data []byte, extension, fallbackName string) (ImportResult, error) {
 }
 
 func importWindowsTerminal(data []byte, fallbackName string) (ImportResult, error) {
+	var inputs []wtScheme
+	// Lista pura ([{...}, {...}]): um pacote de esquemas, como o OpenTerminal Combo.
+	if trimmed := strings.TrimSpace(string(data)); strings.HasPrefix(trimmed, "[") {
+		if err := json.Unmarshal(data, &inputs); err != nil || len(inputs) == 0 {
+			return ImportResult{}, invalid("a lista de esquemas está vazia ou é inválida")
+		}
+		return completeAll(inputs, fallbackName)
+	}
 	var envelope struct {
 		Schemes json.RawMessage `json:"schemes"`
 	}
 	if err := json.Unmarshal(data, &envelope); err != nil {
 		return ImportResult{}, invalid("JSON malformado")
 	}
-	var inputs []wtScheme
 	if len(envelope.Schemes) > 0 && string(envelope.Schemes) != "null" {
 		if err := json.Unmarshal(envelope.Schemes, &inputs); err != nil || len(inputs) == 0 {
 			return ImportResult{}, invalid("a lista schemes está vazia ou é inválida")
@@ -80,6 +87,10 @@ func importWindowsTerminal(data []byte, fallbackName string) (ImportResult, erro
 		}
 		inputs = []wtScheme{one}
 	}
+	return completeAll(inputs, fallbackName)
+}
+
+func completeAll(inputs []wtScheme, fallbackName string) (ImportResult, error) {
 	result := ImportResult{Imported: make([]model.ColorScheme, 0, len(inputs)), Completed: []string{}}
 	for i, input := range inputs {
 		name := strings.TrimSpace(input.Name)

@@ -445,7 +445,7 @@ export const t = {
     imported: 'Importado',
     custom: 'Personalizado',
     import: 'Importar…',
-    importHint: 'Windows Terminal (.json) ou iTerm2 (.itermcolors)',
+    importHint: 'Windows Terminal (.json, um esquema ou uma lista) ou iTerm2 (.itermcolors)',
     importedCount: (n: number) =>
       n === 1 ? '1 esquema importado.' : `${String(n)} esquemas importados.`,
     completed: (colors: string) => `Cores ausentes preenchidas com as do padrão: ${colors}.`,
@@ -455,6 +455,7 @@ export const t = {
     export: 'Exportar…',
     remove: 'Excluir',
     removeConfirm: (name: string) => `Excluir o esquema "${name}"?`,
+    removeNamed: (name: string) => `Excluir ${name}`,
     font: 'Fonte',
     bundled: 'Embutida',
     fontsLoading: 'Procurando fontes instaladas…',

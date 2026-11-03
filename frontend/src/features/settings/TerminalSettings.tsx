@@ -9,11 +9,11 @@ import { useProfiles } from '../../stores/profiles';
 import { Button } from '../../ui/Button';
 import { Checkbox } from '../../ui/Checkbox';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
-import { CheckIcon, WarningIcon } from '../../ui/icons';
+import { CheckIcon, TrashIcon, WarningIcon } from '../../ui/icons';
 import { Segmented } from '../../ui/Segmented';
 import { Slider } from '../../ui/Slider';
 import { toastError, toastInfo } from '../../ui/Toast';
-import { applyProfile, cssFontFamily, schemeOf } from '../terminal/profile';
+import { applyProfile, BRAND_SCHEME_ID, cssFontFamily, schemeOf } from '../terminal/profile';
 import { SchemeEditor } from './SchemeEditor';
 import s from './terminalSettings.module.css';
 
@@ -94,10 +94,13 @@ function SchemeCard({
   scheme,
   selected,
   onSelect,
+  onRemove,
 }: {
   scheme: ColorScheme;
   selected: boolean;
   onSelect: () => void;
+  /** Só para esquemas importados ou personalizados: exclui sem precisar aplicar antes. */
+  onRemove?: (() => void) | undefined;
 }) {
   const [black, red, green, yellow, blue, magenta, cyan] = scheme.ansi;
   const origin =
@@ -107,41 +110,54 @@ function SchemeCard({
         ? tt.imported
         : tt.custom;
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      aria-label={scheme.name}
-      className={s.schemeCard}
-      onClick={onSelect}
-    >
-      <span
-        className={s.schemeSample}
-        style={{ background: scheme.background, color: scheme.foreground }}
+    <div className={s.schemeItem}>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={selected}
+        aria-label={scheme.name}
+        className={s.schemeCard}
+        onClick={onSelect}
       >
-        <span>
-          <span style={{ color: green }}>noc@olt</span>:<span style={{ color: blue }}>~</span>$ ls
+        <span
+          className={s.schemeSample}
+          style={{ background: scheme.background, color: scheme.foreground }}
+        >
+          <span>
+            <span style={{ color: green }}>noc@olt</span>:<span style={{ color: blue }}>~</span>$ ls
+          </span>
+          <span>
+            <span style={{ color: blue }}>logs</span> <span style={{ color: green }}>run.sh</span>{' '}
+            <span style={{ color: red }}>err</span> <span style={{ color: yellow }}>cfg</span>
+          </span>
+          <span className={s.schemeDots}>
+            {[black, red, green, yellow, blue, magenta, cyan, scheme.foreground].map((color, i) => (
+              <span key={i} style={{ background: color }} />
+            ))}
+          </span>
         </span>
-        <span>
-          <span style={{ color: blue }}>logs</span> <span style={{ color: green }}>run.sh</span>{' '}
-          <span style={{ color: red }}>err</span> <span style={{ color: yellow }}>cfg</span>
+        <span className={s.schemeMeta}>
+          <span className={s.schemeName}>{scheme.name}</span>
+          <span className={s.schemeOrigin}>{origin}</span>
         </span>
-        <span className={s.schemeDots}>
-          {[black, red, green, yellow, blue, magenta, cyan, scheme.foreground].map((color, i) => (
-            <span key={i} style={{ background: color }} />
-          ))}
-        </span>
-      </span>
-      <span className={s.schemeMeta}>
-        <span className={s.schemeName}>{scheme.name}</span>
-        <span className={s.schemeOrigin}>{origin}</span>
-      </span>
-      {selected && (
-        <span className={s.schemeCheck} aria-hidden>
-          <CheckIcon />
-        </span>
+        {selected && (
+          <span className={s.schemeCheck} aria-hidden>
+            <CheckIcon />
+          </span>
+        )}
+      </button>
+      {onRemove && (
+        <button
+          type="button"
+          className={s.schemeRemove}
+          title={tt.removeNamed(scheme.name)}
+          aria-label={tt.removeNamed(scheme.name)}
+          onClick={onRemove}
+        >
+          <TrashIcon />
+        </button>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -210,6 +226,9 @@ export function TerminalSettings({ profile, onChange: update }: TerminalSettings
   }
 
   async function remove(target: ColorScheme) {
+    // Excluir o esquema aplicado: este perfil volta para o da marca (o processo principal faz o
+    // mesmo no global, para a exclusão não ser recusada como "em uso").
+    if (target.id === profile.colorSchemeId) update({ colorSchemeId: BRAND_SCHEME_ID });
     const res = await window.openterminal.profiles.removeScheme(target.id);
     if (!res.ok) {
       toastError(res.error);
@@ -250,6 +269,13 @@ export function TerminalSettings({ profile, onChange: update }: TerminalSettings
               onSelect={() => {
                 update({ colorSchemeId: item.id });
               }}
+              onRemove={
+                item.origin === 'builtin'
+                  ? undefined
+                  : () => {
+                      setRemoving(item);
+                    }
+              }
             />
           ))}
         </div>
