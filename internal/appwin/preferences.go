@@ -52,6 +52,8 @@ type Preferences struct {
 	// Highlight pinta palavras de rede (up/down, IPs, interfaces) em saídas sem cor própria.
 	Highlight     bool `json:"highlight"`
 	AutoReconnect bool `json:"autoReconnect"`
+	// Backspace: "auto" (^H no Telnet, ^? no resto), "del" (sempre ^?) ou "ctrlh" (sempre ^H).
+	Backspace string `json:"backspace"`
 }
 
 func DefaultPreferences() Preferences {
@@ -72,6 +74,7 @@ func DefaultPreferences() Preferences {
 		BoldBright:         true,
 		Highlight:          true,
 		AutoReconnect:      false,
+		Backspace:          "auto",
 	}
 }
 
@@ -153,7 +156,14 @@ func normalizedPreferences(preferences Preferences) Preferences {
 	default:
 		preferences.Bell = defaults.Bell
 	}
+	if !ValidBackspace(preferences.Backspace) {
+		preferences.Backspace = defaults.Backspace
+	}
 	return preferences
+}
+
+func ValidBackspace(value string) bool {
+	return value == "auto" || value == "del" || value == "ctrlh"
 }
 
 func ValidAccent(value string) bool { return value == "system" || accentID.MatchString(value) }

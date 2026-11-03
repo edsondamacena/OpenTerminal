@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createHighlighter, createLineJoiner } from './highlight';
+import { mapBackspace } from './backspace';
 import { applyCtrl, setActiveWriter } from './mobileKeys';
 import { FitAddon } from '@xterm/addon-fit';
 import { SearchAddon } from '@xterm/addon-search';
@@ -51,6 +52,8 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
   const fitRef = useRef<FitAddon | null>(null);
   const fitNowRef = useRef<() => void>(() => undefined);
   const activeRef = useRef(active);
+  // O tipo da sessão não muda numa aba; lido por ref para não recriar o terminal.
+  const kindRef = useRef(tab.kind);
   const profile = useProfiles((p) => effectiveProfile(tab.hostId, p.global, p.overrides));
   const scheme = useProfiles((p) => schemeOf(p.schemes, profile.colorSchemeId));
   const unlocked = useVault((v) => v.status?.state === 'unlocked');
@@ -132,7 +135,10 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
       }
     });
     const onData = term.onData((data) => {
-      void api.write(sessionId, applyCtrl(data));
+      void api.write(
+        sessionId,
+        mapBackspace(applyCtrl(data), behavior()?.backspace ?? 'auto', kindRef.current),
+      );
     });
     const onBell = term.onBell(() => {
       ringBell(behavior()?.bell ?? 'visual', container.parentElement ?? container);

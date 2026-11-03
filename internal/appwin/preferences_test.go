@@ -66,3 +66,21 @@ func TestPreferencesWithoutTerminalOptionsKeepDefaults(t *testing.T) {
 		t.Fatalf("preferências migradas = %+v", preferences)
 	}
 }
+
+func TestBackspacePreferenceDefaultsAndNormalizes(t *testing.T) {
+	if DefaultPreferences().Backspace != "auto" {
+		t.Fatalf("padrão = %q", DefaultPreferences().Backspace)
+	}
+	for _, v := range []string{"auto", "del", "ctrlh"} {
+		p := DefaultPreferences()
+		p.Backspace = v
+		if got := normalizedPreferences(p).Backspace; got != v {
+			t.Fatalf("%q virou %q", v, got)
+		}
+	}
+	p := DefaultPreferences()
+	p.Backspace = ""
+	if got := normalizedPreferences(p).Backspace; got != "auto" {
+		t.Fatalf("vazio (preferência antiga) virou %q", got)
+	}
+}

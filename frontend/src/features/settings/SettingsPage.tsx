@@ -2,6 +2,7 @@
 // conteúdo à direita e salvamento automático. As abas seguem vivas por baixo.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type {
+  BackspaceMode,
   BellMode,
   LocalShell,
   Settings,
@@ -157,6 +158,10 @@ function GeneralSection({ settings }: { settings: Settings }) {
   );
 }
 
+const BACKSPACE: { value: BackspaceMode; label: string }[] = (
+  ['auto', 'del', 'ctrlh'] as const
+).map((value) => ({ value, label: t.settings.backspaceOptions[value] }));
+
 const BELLS: { value: BellMode; label: string }[] = (['visual', 'sound', 'off'] as const).map(
   (value) => ({ value, label: t.settings.bellOptions[value] }),
 );
@@ -199,6 +204,12 @@ function TerminalBehavior({ settings }: { settings: Settings }) {
         value={settings.bell}
         options={BELLS}
         onChange={(bell) => void saveUi({ bell })}
+      />
+      <Select
+        label={t.settings.backspace}
+        value={settings.backspace}
+        options={BACKSPACE}
+        onChange={(backspace) => void saveUi({ backspace })}
       />
     </Group>
   );

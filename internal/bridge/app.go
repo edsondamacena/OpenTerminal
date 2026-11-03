@@ -184,6 +184,12 @@ func (s *AppService) UpdatePreferences(patch PreferencesPatch) (appwin.Preferenc
 				return appwin.Preferences{}, apperr.New(apperr.InvalidInput)
 			}
 			preferences.AutoReconnect = value
+		case "backspace":
+			value, ok := raw.(string)
+			if !ok || !appwin.ValidBackspace(value) {
+				return appwin.Preferences{}, apperr.New(apperr.InvalidInput)
+			}
+			preferences.Backspace = value
 		default:
 			return appwin.Preferences{}, apperr.New(apperr.InvalidInput)
 		}

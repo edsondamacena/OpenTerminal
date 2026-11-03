@@ -171,6 +171,12 @@ export const t = {
     rightClickPaste: 'Colar com o botão direito',
     bell: 'Sino do terminal',
     bellOptions: { off: 'Desligado', sound: 'Som', visual: 'Piscar a tela' },
+    backspace: 'Tecla Backspace envia',
+    backspaceOptions: {
+      auto: 'Automático (^H no Telnet, ^? no SSH)',
+      del: 'Sempre ^? (DEL, padrão Linux)',
+      ctrlh: 'Sempre ^H (Ctrl+H)',
+    },
     boldBright: 'Negrito em cores claras',
     boldBrightHint: 'Texto em negrito usa a versão clara da cor, como nos terminais clássicos.',
     highlight: 'Realçar palavras de rede',

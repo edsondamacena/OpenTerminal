@@ -220,9 +220,13 @@ export interface Settings {
   /** Realce de palavras de rede em saídas sem cor própria (equipamentos de rede). */
   highlight: boolean;
   autoReconnect: boolean;
+  /** O que a tecla Backspace envia: `auto` = ^H no Telnet e ^? no resto. */
+  backspace: BackspaceMode;
 }
 
 export type BellMode = 'off' | 'sound' | 'visual';
+
+export type BackspaceMode = 'auto' | 'del' | 'ctrlh';
 
 export interface Appearance {
   glass: boolean;
