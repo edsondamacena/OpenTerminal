@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createHighlighter, createLineJoiner } from './highlight';
-import { mapBackspace } from './backspace';
+import { mapBackspace, mapDelete } from './backspace';
 import { applyCtrl, setActiveWriter } from './mobileKeys';
 import { FitAddon } from '@xterm/addon-fit';
 import { SearchAddon } from '@xterm/addon-search';
@@ -133,7 +133,9 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
       }
     });
     const onData = term.onData((data) => {
-      void api.write(sessionId, mapBackspace(applyCtrl(data), behavior()?.backspace ?? 'del'));
+      const settings = behavior();
+      const keyed = mapDelete(applyCtrl(data), settings?.deleteKey ?? 'backspace');
+      void api.write(sessionId, mapBackspace(keyed, settings?.backspace ?? 'ctrlh'));
     });
     const onBell = term.onBell(() => {
       ringBell(behavior()?.bell ?? 'visual', container.parentElement ?? container);

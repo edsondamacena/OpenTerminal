@@ -220,13 +220,17 @@ export interface Settings {
   /** Realce de palavras de rede em saídas sem cor própria (equipamentos de rede). */
   highlight: boolean;
   autoReconnect: boolean;
-  /** O que a tecla Backspace envia: ^? (`del`, padrão) ou ^H (`ctrlh`). */
+  /** O que a tecla Backspace envia: ^H (`ctrlh`, padrão) ou ^? (`del`). */
   backspace: BackspaceMode;
+  /** O que a tecla Delete envia: o mesmo do Backspace (`backspace`, padrão), ^D ou ESC[3~ (`vt`). */
+  deleteKey: DeleteKeyMode;
 }
 
 export type BellMode = 'off' | 'sound' | 'visual';
 
 export type BackspaceMode = 'del' | 'ctrlh';
+
+export type DeleteKeyMode = 'backspace' | 'ctrld' | 'vt';
 
 export interface Appearance {
   glass: boolean;

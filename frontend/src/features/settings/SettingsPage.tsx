@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type {
   BackspaceMode,
   BellMode,
+  DeleteKeyMode,
   LocalShell,
   Settings,
   TermType,
@@ -158,8 +159,11 @@ function GeneralSection({ settings }: { settings: Settings }) {
   );
 }
 
-const BACKSPACE: { value: BackspaceMode; label: string }[] = (['del', 'ctrlh'] as const).map(
+const BACKSPACE: { value: BackspaceMode; label: string }[] = (['ctrlh', 'del'] as const).map(
   (value) => ({ value, label: t.settings.backspaceOptions[value] }),
+);
+const DELETE_KEY: { value: DeleteKeyMode; label: string }[] = (['backspace', 'ctrld', 'vt'] as const).map(
+  (value) => ({ value, label: t.settings.deleteKeyOptions[value] }),
 );
 
 const BELLS: { value: BellMode; label: string }[] = (['visual', 'sound', 'off'] as const).map(
@@ -210,6 +214,12 @@ function TerminalBehavior({ settings }: { settings: Settings }) {
         value={settings.backspace}
         options={BACKSPACE}
         onChange={(backspace) => void saveUi({ backspace })}
+      />
+      <Select
+        label={t.settings.deleteKey}
+        value={settings.deleteKey}
+        options={DELETE_KEY}
+        onChange={(deleteKey) => void saveUi({ deleteKey })}
       />
     </Group>
   );

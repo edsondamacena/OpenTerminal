@@ -15,10 +15,21 @@ type Terminal struct {
 	mu    sync.Mutex
 	sess  *ssh.Session
 	stdin io.WriteCloser
+
+	// erase é o VERASE declarado no PTY: tem que ser o mesmo byte que a tecla Backspace manda.
+	erase byte
 }
 
 func NewTerminal(c *Client) *Terminal {
-	return &Terminal{client: c}
+	return &Terminal{client: c, erase: 0x7f}
+}
+
+// WithErase troca o VERASE do PTY (0x08 para ^H, 0x7f para ^?). Vale no próximo Start.
+func (t *Terminal) WithErase(b byte) *Terminal {
+	if b == 0x08 || b == 0x7f {
+		t.erase = b
+	}
+	return t
 }
 
 // Latency expõe à sessão o RTT medido pelo keepalive para a barra de status.
@@ -38,7 +49,7 @@ func (t *Terminal) Start(cols, rows int, out io.Writer) error {
 		return err
 	}
 	sess.Stdout, sess.Stderr = out, out
-	if err := sess.RequestPty(t.client.term, rows, cols, ptyModes()); err != nil {
+	if err := sess.RequestPty(t.client.term, rows, cols, ptyModes(t.erase)); err != nil {
 		_ = sess.Close()
 		return err
 	}
@@ -94,9 +105,9 @@ func (t *Terminal) Close() error {
 	return t.client.Close()
 }
 
-// ptyModes vai no pedido do PTY. VERASE = ^? (0x7f), que é o que o Backspace do terminal manda,
-// como fazem o OpenSSH e o PuTTY; sem ele, alguns servidores assumem ^H e o ^? vira "apagar para
-// frente".
-func ptyModes() ssh.TerminalModes {
-	return ssh.TerminalModes{ssh.ECHO: 1, ssh.VERASE: 0x7f, ssh.TTY_OP_ISPEED: 14400, ssh.TTY_OP_OSPEED: 14400}
+// ptyModes vai no pedido do PTY. VERASE = o byte que a tecla Backspace manda (preferência ^H ou
+// ^?), como fazem o OpenSSH e o PuTTY. Se não bater, o modo linha do servidor (login, senha do
+// sudo, read) não apaga e ecoa "^H^H^H".
+func ptyModes(erase byte) ssh.TerminalModes {
+	return ssh.TerminalModes{ssh.ECHO: 1, ssh.VERASE: uint32(erase), ssh.TTY_OP_ISPEED: 14400, ssh.TTY_OP_OSPEED: 14400}
 }

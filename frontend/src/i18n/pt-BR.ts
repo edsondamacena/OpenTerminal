@@ -173,8 +173,14 @@ export const t = {
     bellOptions: { off: 'Desligado', sound: 'Som', visual: 'Piscar a tela' },
     backspace: 'Tecla Backspace envia',
     backspaceOptions: {
-      del: '^? (DEL, padrão)',
-      ctrlh: '^H (Ctrl+H)',
+      del: '^? (DEL)',
+      ctrlh: '^H (Ctrl+H, padrão)',
+    },
+    deleteKey: 'Tecla Delete envia',
+    deleteKeyOptions: {
+      backspace: 'O mesmo do Backspace (padrão)',
+      ctrld: '^D (apaga o caractere do cursor)',
+      vt: 'ESC[3~ (padrão xterm)',
     },
     boldBright: 'Negrito em cores claras',
     boldBrightHint: 'Texto em negrito usa a versão clara da cor, como nos terminais clássicos.',

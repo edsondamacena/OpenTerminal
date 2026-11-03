@@ -68,7 +68,7 @@ func TestPreferencesWithoutTerminalOptionsKeepDefaults(t *testing.T) {
 }
 
 func TestBackspacePreferenceDefaultsAndNormalizes(t *testing.T) {
-	if DefaultPreferences().Backspace != "del" {
+	if DefaultPreferences().Backspace != "ctrlh" {
 		t.Fatalf("padrão = %q", DefaultPreferences().Backspace)
 	}
 	for _, v := range []string{"del", "ctrlh"} {
@@ -81,8 +81,28 @@ func TestBackspacePreferenceDefaultsAndNormalizes(t *testing.T) {
 	p := DefaultPreferences()
 	for _, v := range []string{"", "auto"} {
 		p.Backspace = v
-		if got := normalizedPreferences(p).Backspace; got != "del" {
-			t.Fatalf("%q virou %q, esperava del", v, got)
+		if got := normalizedPreferences(p).Backspace; got != "ctrlh" {
+			t.Fatalf("%q virou %q, esperava ctrlh", v, got)
+		}
+	}
+}
+
+func TestDeleteKeyPreferenceDefaultsAndNormalizes(t *testing.T) {
+	if DefaultPreferences().DeleteKey != "backspace" {
+		t.Fatalf("padrão = %q", DefaultPreferences().DeleteKey)
+	}
+	for _, v := range []string{"backspace", "ctrld", "vt"} {
+		p := DefaultPreferences()
+		p.DeleteKey = v
+		if got := normalizedPreferences(p).DeleteKey; got != v {
+			t.Fatalf("%q virou %q", v, got)
+		}
+	}
+	for _, v := range []string{"", "auto", "x"} {
+		p := DefaultPreferences()
+		p.DeleteKey = v
+		if got := normalizedPreferences(p).DeleteKey; got != "backspace" {
+			t.Fatalf("%q virou %q", v, got)
 		}
 	}
 }

@@ -52,8 +52,12 @@ type Preferences struct {
 	// Highlight pinta palavras de rede (up/down, IPs, interfaces) em saídas sem cor própria.
 	Highlight     bool `json:"highlight"`
 	AutoReconnect bool `json:"autoReconnect"`
-	// Backspace: "del" (^?, padrão) ou "ctrlh" (^H, para equipamentos que só apagam com Ctrl+H).
+	// Backspace: "ctrlh" (^H, padrão: equipamentos de rede apagam com Ctrl+H) ou "del" (^?).
 	Backspace string `json:"backspace"`
+	// DeleteKey: o que a tecla Delete manda. "backspace" (padrão: apaga para trás, como o
+	// Backspace; equipamento de rede não entende o ESC[3~ e imprime "~"), "ctrld" (^D, apaga o
+	// caractere do cursor nos CLIs estilo Cisco) ou "vt" (ESC[3~, padrão do xterm).
+	DeleteKey string `json:"deleteKey"`
 }
 
 func DefaultPreferences() Preferences {
@@ -74,7 +78,8 @@ func DefaultPreferences() Preferences {
 		BoldBright:         true,
 		Highlight:          true,
 		AutoReconnect:      false,
-		Backspace:          "del",
+		Backspace:          "ctrlh",
+		DeleteKey:          "backspace",
 	}
 }
 
@@ -159,11 +164,18 @@ func normalizedPreferences(preferences Preferences) Preferences {
 	if !ValidBackspace(preferences.Backspace) {
 		preferences.Backspace = defaults.Backspace
 	}
+	if !ValidDeleteKey(preferences.DeleteKey) {
+		preferences.DeleteKey = defaults.DeleteKey
+	}
 	return preferences
 }
 
 func ValidBackspace(value string) bool {
 	return value == "del" || value == "ctrlh"
+}
+
+func ValidDeleteKey(value string) bool {
+	return value == "backspace" || value == "ctrld" || value == "vt"
 }
 
 func ValidAccent(value string) bool { return value == "system" || accentID.MatchString(value) }

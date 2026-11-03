@@ -190,6 +190,12 @@ func (s *AppService) UpdatePreferences(patch PreferencesPatch) (appwin.Preferenc
 				return appwin.Preferences{}, apperr.New(apperr.InvalidInput)
 			}
 			preferences.Backspace = value
+		case "deleteKey":
+			value, ok := raw.(string)
+			if !ok || !appwin.ValidDeleteKey(value) {
+				return appwin.Preferences{}, apperr.New(apperr.InvalidInput)
+			}
+			preferences.DeleteKey = value
 		default:
 			return appwin.Preferences{}, apperr.New(apperr.InvalidInput)
 		}

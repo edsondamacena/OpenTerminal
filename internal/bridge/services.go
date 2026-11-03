@@ -80,6 +80,12 @@ func newServices(dataDir string, kdf func([]byte) vault.KDFParams) (*Services, e
 	s.forwardService = newForwardService(store, s.forwards)
 	s.profileService = newProfileService(store, s.sessions, s.Context, s.emit)
 	preferences := appwin.NewPreferenceStore(store)
+	s.sessionService.eraseChar = func() byte {
+		if p, err := preferences.Get(); err == nil && p.Backspace == "del" {
+			return 0x7f
+		}
+		return 0x08
+	}
 	appearance := appwin.NewAppearanceMonitor(appwin.RegistryAppearanceReader{}, preferences.Get,
 		func(value appwin.Appearance) { s.emit("app:appearance", value) })
 	s.closeGuard = appwin.NewCloseGuard(

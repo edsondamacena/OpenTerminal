@@ -33,6 +33,8 @@ type SessionService struct {
 	sessions      *session.Manager
 	sftpDial      func(sessionID, hostID string) session.Dialer
 	transferCount func() int
+	// eraseChar diz o byte do Backspace (preferência) para o VERASE do PTY SSH.
+	eraseChar func() byte
 }
 
 func newSessionService(store *vault.Store, sessions *session.Manager) *SessionService {
@@ -186,7 +188,11 @@ func (s *SessionService) dialHost(hostID string) session.Dialer {
 		if err != nil {
 			return nil, err
 		}
-		return sshx.NewTerminal(client), nil
+		term := sshx.NewTerminal(client)
+		if s.eraseChar != nil {
+			term.WithErase(s.eraseChar())
+		}
+		return term, nil
 	}
 }
 
