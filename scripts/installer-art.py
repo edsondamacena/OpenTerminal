@@ -18,13 +18,21 @@ TOP = (34, 36, 43)
 BOTTOM = (16, 17, 20)
 WHITE = (255, 255, 255)
 MUTED = (160, 164, 176)
-ORANGE = (253, 123, 23)
+ACCENT = (0, 137, 253)  # azul do appicon do OpenTerminal (o laranja era do OpenHost)
 
 SCALE = 3  # desenha em 3x e reduz, para o texto sair liso
 
 
+# Fora do Windows (build no Linux): Noto Sans no lugar da Segoe UI.
+LINUX_FONTS = {'segoeuib.ttf': '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',
+               'segoeui.ttf': '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf'}
+
+
 def font(name: str, size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(str(FONTS / name), size * SCALE)
+    path = FONTS / name
+    if not path.is_file() and name in LINUX_FONTS:
+        path = Path(LINUX_FONTS[name])
+    return ImageFont.truetype(str(path), size * SCALE)
 
 
 def gradient(w: int, h: int) -> Image.Image:
@@ -53,7 +61,7 @@ def welcome(icon: Image.Image) -> Image.Image:
     centered(draw, 212 * SCALE, 'Cliente SSH para Windows', font('segoeui.ttf', 9), MUTED, w)
     bar_w = 26 * SCALE
     draw.rounded_rectangle(
-        [(w - bar_w) // 2, 236 * SCALE, (w + bar_w) // 2, 238 * SCALE], radius=SCALE, fill=ORANGE
+        [(w - bar_w) // 2, 236 * SCALE, (w + bar_w) // 2, 238 * SCALE], radius=SCALE, fill=ACCENT
     )
     return img.resize((164, 314), Image.LANCZOS)
 
