@@ -220,16 +220,20 @@ export function TabBar({ newTabItems, trailing }: TabBarProps) {
       {newTabItems.length > 0 && (
         <Button
           variant="ghost"
-          iconOnly
           className={`${s.newTab} no-drag`}
-          aria-label={t.terminal.newLocal}
-          aria-haspopup="menu"
-          aria-expanded={menuAnchor !== null}
-          onClick={(e) => {
+          title={newTabItems.length > 1 ? t.terminal.newLocalHint : undefined}
+          onClick={() => {
+            newTabItems[0]?.onSelect();
+          }}
+          onContextMenu={(e) => {
+            // Botão direito: escolher outro shell.
+            if (newTabItems.length < 2) return;
+            e.preventDefault();
             const el = e.currentTarget;
             setMenuAnchor((cur) => (cur ? null : el));
           }}
         >
+          {t.terminal.newTerminal}
           <PlusIcon />
         </Button>
       )}

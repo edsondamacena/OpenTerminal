@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { CommandPalette } from '../features/palette/CommandPalette';
 import { ActiveForwardsDialog } from '../features/forwarding/ActiveForwardsDialog';
 import { Sidebar } from '../features/sidebar/Sidebar';
-import { toggleSidebar } from '../features/terminal/commands';
 import { Workspace } from '../features/terminal/Workspace';
 import { CreateVaultScreen } from '../features/vault/CreateVaultScreen';
 import { focusUnlock } from '../features/vault/UnlockScreen';
@@ -17,8 +16,6 @@ import {
   BackIcon,
   LockIcon,
   SettingsIcon,
-  SidebarCollapseIcon,
-  SidebarExpandIcon,
   TerminalIcon,
   UnlockIcon,
 } from '../ui/icons';
@@ -29,7 +26,6 @@ import { trackActivity } from './activity';
 import { CloseConfirmDialog } from './CloseConfirmDialog';
 import { StatusBar } from './StatusBar';
 import { TitleBar } from './TitleBar';
-import { useShortcutLabel, withShortcut } from './useShortcuts';
 import s from './app.module.css';
 
 function FullscreenFrame({ children }: { children: React.ReactNode }) {
@@ -45,10 +41,6 @@ export function App() {
   const { status, refresh, lock } = useVault();
   const view = useWorkspace((w) => w.view);
   const collapsed = useUi((u) => u.settings?.sidebarCollapsed ?? false);
-  const sidebarLabel = withShortcut(
-    collapsed ? t.sidebar.expand : t.sidebar.collapse,
-    useShortcutLabel('toggleSidebar'),
-  );
   const setView = useWorkspace((w) => w.setView);
   const mobile = useMobile();
   const mobilePane = useWorkspace((w) => w.mobilePane);
@@ -185,18 +177,7 @@ export function App() {
                 <TerminalIcon />
               </Button>
             ) : null
-          ) : (
-            <Button
-              variant="ghost"
-              iconOnly
-              aria-label={sidebarLabel}
-              title={sidebarLabel}
-              aria-expanded={!collapsed}
-              onClick={toggleSidebar}
-            >
-              {collapsed ? <SidebarExpandIcon /> : <SidebarCollapseIcon />}
-            </Button>
-          )
+          ) : null
         }
         actions={
           <>

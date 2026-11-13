@@ -262,6 +262,7 @@ export const t = {
     osIconAutoDetected: (os: string) => `Automático (${os})`,
     group: 'Grupo',
     add: 'Novo host',
+    addMenu: 'Novo host ou grupo',
     edit: 'Editar host',
     label: 'Nome',
     address: 'Endereço',
@@ -308,6 +309,8 @@ export const t = {
     credential: 'Credencial',
     newPasswordCredential: 'Nova senha…',
     noCredential: 'Selecione…',
+    password: 'Senha',
+    passwordKeep: 'Deixe em branco para manter a atual',
     connect: 'Conectar',
     removeConfirmTitle: 'Excluir host',
     removeConfirm: (label: string) =>
@@ -353,6 +356,8 @@ export const t = {
   },
   terminal: {
     newLocal: 'Novo terminal local',
+    newTerminal: 'Novo terminal',
+    newLocalHint: 'Botão direito para escolher outro shell',
     emptyTitle: 'Nenhuma sessão aberta',
     emptyAction: 'Abrir terminal',
     emptyHint: (shortcut: string | null) =>

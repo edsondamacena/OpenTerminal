@@ -15,6 +15,7 @@ import {
   CaseSensitive,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ChevronUp,
   ClipboardCopy,
@@ -82,6 +83,7 @@ export const RefreshIcon = icon(RefreshCw);
 export const EyeIcon = icon(Eye);
 export const EyeOffIcon = icon(EyeOff);
 export const ChevronIcon = icon(ChevronRight);
+export const ChevronLeftIcon = icon(ChevronLeft);
 
 // Barra de título e barra lateral.
 export const MinimiseIcon = icon(Minus);

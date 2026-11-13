@@ -10,8 +10,6 @@ import { useVault } from '../../stores/vault';
 import { useWorkspace } from '../../stores/workspace';
 import {
   FolderOpenIcon,
-  ForwardIcon,
-  KeyIcon,
   LockIcon,
   ServerIcon,
   SettingsIcon,
@@ -20,7 +18,6 @@ import { Popover } from '../../ui/Popover';
 import { useMobile } from '../../app/mobile';
 import { toggleSidebar } from '../terminal/commands';
 import { MobileTerminals } from './MobileTerminals';
-import { CredentialsDialog } from '../hosts/CredentialsDialog';
 import { HostSidebar } from '../hosts/HostSidebar';
 import { openSftp } from '../sftp/openSftp';
 import { focusUnlock, UnlockPanel } from '../vault/UnlockScreen';
@@ -91,9 +88,7 @@ function Rail() {
     return tab?.kind === 'ssh' ? tab.hostId : null;
   });
   const sftpHost = useHosts((st) => st.hosts.find((h) => h.id === sshHostId) ?? null);
-  const setForwardsOpen = useWorkspace((w) => w.setForwardsOpen);
   const setView = useWorkspace((w) => w.setView);
-  const [credentials, setCredentials] = useState(false);
 
   return (
     <nav className={s.rail} aria-label={t.sidebar.railLabel}>
@@ -119,15 +114,6 @@ function Rail() {
         </RailButton>
       )}
       <RailButton
-        label={unlocked ? t.sidebar.credentials : t.sidebar.credentialsLocked}
-        disabled={!unlocked}
-        onClick={() => {
-          setCredentials(true);
-        }}
-      >
-        <KeyIcon />
-      </RailButton>
-      <RailButton
         label={sftpHost ? t.sidebar.sftp(sftpHost.label) : t.sidebar.sftpUnavailable}
         disabled={!sftpHost}
         onClick={() => {
@@ -135,14 +121,6 @@ function Rail() {
         }}
       >
         <FolderOpenIcon />
-      </RailButton>
-      <RailButton
-        label={t.sidebar.forwards}
-        onClick={() => {
-          setForwardsOpen(true);
-        }}
-      >
-        <ForwardIcon />
       </RailButton>
       <span className={s.spacer} />
       <RailButton
@@ -153,13 +131,6 @@ function Rail() {
       >
         <SettingsIcon />
       </RailButton>
-      {credentials && (
-        <CredentialsDialog
-          onClose={() => {
-            setCredentials(false);
-          }}
-        />
-      )}
     </nav>
   );
 }

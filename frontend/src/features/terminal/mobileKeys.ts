@@ -24,8 +24,9 @@ export function setActiveWriter(next: Writer): () => void {
 
 /** Com o Ctrl armado, uma letra vira o caractere de controle (Ctrl+C → \x03). */
 export function applyCtrl(data: string): string {
-  if (!ctrlArmed || data.length !== 1) return data;
-  const code = data.toUpperCase().charCodeAt(0);
+  if (!ctrlArmed || data.length === 0) return data;
+  // Teclado do Android (Gboard) às vezes entrega a letra junto com o texto já composto: vale a última.
+  const code = data.slice(-1).toUpperCase().charCodeAt(0);
   if (code < 64 || code > 95) return data;
   ctrlArmed = false;
   window.OpenTerminalAndroid?.ctrlUsed();

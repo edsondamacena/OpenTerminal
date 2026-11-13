@@ -5,6 +5,7 @@ import { t } from '../../i18n/pt-BR';
 import { closeTab, isLive, useSessions, type Tab } from '../../stores/sessions';
 import { useShells } from '../../stores/shells';
 import { useUi } from '../../stores/ui';
+import { useVault } from '../../stores/vault';
 import { useWorkspace } from '../../stores/workspace';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { Button } from '../../ui/Button';
@@ -122,6 +123,8 @@ function CloseTabConfirm() {
   );
 }
 
+let autoOpened = false;
+
 export function Workspace() {
   const { tabs, activeId } = useSessions();
   const settings = useWorkspace((w) => w.view === 'settings');
@@ -130,16 +133,35 @@ export function Workspace() {
   const defaultShell = useUi((u) => u.settings?.defaultShell);
   const newLocal = useMemo(
     () =>
-      shells.map((shell) => ({
+      // O shell padrão vem primeiro: é o que o botão "Novo terminal" abre direto.
+      [...shells]
+        .sort((x, y) => Number(y.id === defaultShell) - Number(x.id === defaultShell))
+        .map((shell) => ({
         label: shell.label,
         icon: <ShellIcon kind={shell.kind} label={shell.label} />,
         onSelect: () => void openLocal(shell.id),
       })),
-    [shells],
+    [shells, defaultShell],
   );
 
   // Atalhos de FR-140/FR-173, capturados antes do xterm para não virarem caracteres de controle.
   useEffect(() => installShortcuts(runShortcut, currentKeymap), []);
+  // Abriu sem pedir a senha (cofre já aberto) e sem abas: começa direto num terminal local
+  // com o shell padrão. Uma vez por carga da página; espera um pouco para as abas de sessões
+  // vivas voltarem (janela reaberta) antes de decidir.
+  const firstShell = newLocal[0];
+  const vaultState = useVault((v) => v.status?.state);
+  useEffect(() => {
+    if (autoOpened || !firstShell || vaultState !== 'unlocked') return;
+    if (/Android/.test(navigator.userAgent)) return;
+    const timer = window.setTimeout(() => {
+      autoOpened = true;
+      if (useSessions.getState().tabs.length === 0) firstShell.onSelect();
+    }, 600);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [firstShell, vaultState]);
   // Fechar a janela (Alt+F4, X) com sessão aberta pergunta antes; o navegador mostra o aviso dele.
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {

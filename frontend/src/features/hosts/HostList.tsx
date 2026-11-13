@@ -155,12 +155,6 @@ export function HostList({ query, listRef, onEdit, onAdd }: HostListProps) {
       { label: t.hosts.connect, onSelect: () => void connectHost(host) },
       { label: t.sftp.open, onSelect: () => void openSftp(host) },
       {
-        label: t.forwarding.open,
-        onSelect: () => {
-          setPending({ kind: 'forwards', host });
-        },
-      },
-      {
         label: t.common.edit,
         onSelect: () => {
           onEdit(host);

@@ -27,16 +27,18 @@ import { HostTerminalDialog } from './HostTerminalDialog';
 import s from './hosts.module.css';
 import { groupPaths } from './tree';
 
-const NEW_PASSWORD = '__new__';
 const NONE = '';
 const ROOT = '';
 
 const METHODS: { value: AuthMethod; label: string }[] = [
   { value: 'password', label: t.hosts.authPassword },
-  { value: 'key', label: t.hosts.authKey },
   { value: 'ask', label: t.hosts.authAsk },
+  { value: 'key', label: t.hosts.authKey },
   { value: 'agent', label: t.hosts.authAgent },
 ];
+// Login e senha ficam no próprio host (a senha vai cifrada no cofre, como antes). Chave e agente
+// só aparecem para hosts antigos que já usam esses métodos.
+const SIMPLE: AuthMethod[] = ['password', 'ask'];
 
 const PROTOCOLS: { value: Protocol; label: string }[] = [
   { value: 'ssh', label: 'SSH' },
@@ -47,11 +49,10 @@ const DEFAULT_PORT: Record<Protocol, string> = { ssh: '22', telnet: '23' };
 export interface HostFormProps {
   host: HostView | null;
   onClose: () => void;
-  onManageCredentials: () => void;
 }
 
-export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) {
-  const { credentials, groups, reload } = useHosts();
+export function HostForm({ host, onClose }: HostFormProps) {
+  const { credentials, groups, hosts, reload } = useHosts();
   const [label, setLabel] = useState(host?.label ?? '');
   const [groupId, setGroupId] = useState(host?.groupId ?? ROOT);
   const [address, setAddress] = useState(host?.address ?? '');
@@ -60,10 +61,12 @@ export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) 
   const [port, setPort] = useState(String(host?.port ?? 22));
   const [username, setUsername] = useState(host?.username ?? '');
   const [method, setMethod] = useState<AuthMethod>(host?.authMethod ?? 'password');
-  const [credentialId, setCredentialId] = useState<string>(
-    host?.credentialId ?? (host ? NONE : NEW_PASSWORD),
+  const [keyId, setKeyId] = useState<string>(
+    host?.authMethod === 'key' ? (host.credentialId ?? NONE) : NONE,
   );
   const [newPassword, setNewPassword] = useState('');
+  // Edição de host que já tem senha: campo em branco mantém a senha salva.
+  const hasSavedPassword = host?.authMethod === 'password' && Boolean(host.credentialId);
   // Host novo começa com o padrão da seção Conexão até o usuário mexer no campo.
   const legacyDefault = useVault((v) => v.settings?.legacyDefault ?? false);
   const loadVaultSettings = useVault((v) => v.loadSettings);
@@ -88,15 +91,15 @@ export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) 
     if (!host) void loadVaultSettings();
   }, [host, loadVaultSettings]);
 
-  const kind = method === 'key' ? 'key' : 'password';
-  const options = [
+  const keyOptions = [
     { value: NONE, label: t.hosts.noCredential },
-    ...(method === 'password'
-      ? [{ value: NEW_PASSWORD, label: t.hosts.newPasswordCredential }]
-      : []),
-    ...credentials.filter((c) => c.kind === kind).map((c) => ({ value: c.id, label: c.name })),
+    ...credentials.filter((c) => c.kind === 'key').map((c) => ({ value: c.id, label: c.name })),
   ];
-  const selected = options.some((o) => o.value === credentialId) ? credentialId : NONE;
+  const methodOptions = METHODS.filter(
+    (m) =>
+      (SIMPLE.includes(m.value) || m.value === host?.authMethod) &&
+      (!telnet || m.value === 'password' || m.value === 'ask'),
+  );
   const paths = groupPaths(groups);
   const groupOptions = [
     { value: ROOT, label: t.groups.root },
@@ -106,7 +109,6 @@ export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) 
   ];
   const portNumber = Number(port);
   const portValid = Number.isInteger(portNumber) && portNumber >= 1 && portNumber <= 65535;
-  const needsCredential = method === 'password' || method === 'key';
   // Telnet: há equipamento que só pede a senha.
   const userOptional = telnet;
   const valid =
@@ -114,20 +116,25 @@ export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) 
     address.trim() !== '' &&
     (userOptional || username.trim() !== '') &&
     portValid &&
-    (!needsCredential || (selected === NEW_PASSWORD ? newPassword !== '' : selected !== NONE));
+    (method !== 'password' || newPassword !== '' || hasSavedPassword) &&
+    (method !== 'key' || keyId !== NONE);
 
   async function submit() {
     if (!valid) return;
     setBusy(true);
-    let credId: string | null = needsCredential ? selected : null;
-    if (credId === NEW_PASSWORD) {
-      const res = await window.openterminal.credentials.createPassword(label.trim(), newPassword);
-      if (!res.ok) {
-        setBusy(false);
-        toastError(res.error);
-        return;
+    let credId: string | null = null;
+    if (method === 'key') credId = keyId;
+    else if (method === 'password') {
+      if (newPassword === '') credId = host?.credentialId ?? null;
+      else {
+        const res = await window.openterminal.credentials.createPassword(label.trim(), newPassword);
+        if (!res.ok) {
+          setBusy(false);
+          toastError(res.error);
+          return;
+        }
+        credId = res.value.id;
       }
-      credId = res.value.id;
     }
     const input: HostInput = {
       label: label.trim(),
@@ -149,6 +156,12 @@ export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) 
     if (!res.ok) {
       toastError(res.error);
       return;
+    }
+    // Senha trocada: a antiga sai do cofre se nenhum outro host a usa.
+    const old = host?.credentialId;
+    if (old && old !== credId && !hosts.some((h) => h.id !== host.id && h.credentialId === old)) {
+      const del = await window.openterminal.credentials.remove(old);
+      if (!del.ok) toastError(del.error);
     }
     await reload();
     onClose();
@@ -267,25 +280,21 @@ export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) 
         <Select
           label={t.hosts.authMethod}
           value={method}
-          options={
-            telnet ? METHODS.filter((m) => m.value === 'password' || m.value === 'ask') : METHODS
-          }
+          options={methodOptions}
           onChange={(v) => {
             setMethod(v);
           }}
         />
-        {needsCredential && (
-          <Select
-            label={t.hosts.credential}
-            value={selected}
-            options={options}
-            onChange={setCredentialId}
-          />
+        {method === 'key' && (
+          <Select label={t.hosts.credential} value={keyId} options={keyOptions} onChange={setKeyId} />
         )}
         {method === 'agent' && <p className={s.hint}>{t.hosts.authAgentHint}</p>}
-        {needsCredential && selected === NEW_PASSWORD && (
+        {method === 'password' && (
           <TextField
-            label={t.credentials.password}
+            label={t.hosts.password}
+            hint={hasSavedPassword ? t.hosts.passwordKeep : undefined}
+            placeholder={hasSavedPassword ? '••••••••' : undefined}
+            autoComplete="new-password"
             secret
             value={newPassword}
             onChange={(e) => {
@@ -325,9 +334,6 @@ export function HostForm({ host, onClose, onManageCredentials }: HostFormProps) 
             )}
           </div>
         )}
-        <Button variant="ghost" style={{ alignSelf: 'flex-start' }} onClick={onManageCredentials}>
-          {t.hosts.manageCredentials}
-        </Button>
       </div>
       {host && editingProfile && (
         <HostTerminalDialog

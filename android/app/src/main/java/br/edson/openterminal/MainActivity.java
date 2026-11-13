@@ -353,7 +353,12 @@ public class MainActivity extends Activity {
         // Setas ← ↑ → (histórico e edição da linha), as teclas usadas no dia a dia. Para voltar
         // outras, acrescente aqui: {"ESC", "\u001b"}, {"CTRL", null} (arma o Ctrl), {"TAB", "\t"}...
         bar.setGravity(Gravity.END);
+        // CTRL arma o Ctrl para a próxima letra do teclado; ^C interrompe direto; COLAR manda o
+        // texto da área de transferência do Android (o Ctrl+V do celular).
         String[][] keys = {
+                {"CTRL", null},
+                {"^C", "\u0003"},
+                {"COLAR", PASTE},
                 {"←", "\u001b[D"},
                 {"↑", "\u001b[A"},
                 {"→", "\u001b[C"},
@@ -365,13 +370,15 @@ public class MainActivity extends Activity {
             b.setTextColor(Color.rgb(228, 228, 231));
             b.setMinWidth(0);
             b.setMinimumWidth(0);
-            b.setPadding(dp(22), 0, dp(22), 0);
-            b.setTextSize(20);
+            b.setPadding(dp(14), 0, dp(14), 0);
+            b.setTextSize(k[0].length() > 2 ? 14 : 20);
             b.setGravity(Gravity.CENTER);
             String seq = k[1];
             if (seq == null) {
                 ctrlButton = b;
                 b.setOnClickListener(v -> setCtrl(!ctrlArmed));
+            } else if (PASTE.equals(seq)) {
+                b.setOnClickListener(v -> pasteClipboard());
             } else {
                 b.setOnClickListener(v -> sendKeys(seq));
             }
@@ -385,6 +392,16 @@ public class MainActivity extends Activity {
         ctrlArmed = armed;
         ctrlButton.setTextColor(armed ? Color.rgb(249, 115, 22) : Color.rgb(228, 228, 231));
         web.evaluateJavascript("window.openterminalKeys&&window.openterminalKeys.ctrl(" + armed + ")", null);
+    }
+
+    private static final String PASTE = "__paste__";
+
+    private void pasteClipboard() {
+        android.content.ClipboardManager cm =
+                (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (cm == null || !cm.hasPrimaryClip() || cm.getPrimaryClip().getItemCount() == 0) return;
+        CharSequence text = cm.getPrimaryClip().getItemAt(0).coerceToText(this);
+        if (text != null && text.length() > 0) sendKeys(text.toString());
     }
 
     private void sendKeys(String seq) {

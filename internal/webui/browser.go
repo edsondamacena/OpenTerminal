@@ -78,7 +78,10 @@ func (b Browser) Command(url string) (*exec.Cmd, error) {
 func prepareProfile(dir string) error {
 	prefs := filepath.Join(dir, "Default", "Preferences")
 	if _, err := os.Stat(prefs); !errors.Is(err, os.ErrNotExist) {
-		return err
+		if err != nil {
+			return err
+		}
+		return useSystemFrame(prefs)
 	}
 	if err := os.MkdirAll(filepath.Dir(prefs), 0o700); err != nil {
 		return err
@@ -88,6 +91,35 @@ func prepareProfile(dir string) error {
 		"profile":                    map[string]any{"password_manager_enabled": false},
 		"autofill":                   map[string]any{"profile_enabled": false, "credit_card_enabled": false},
 		"translate":                  map[string]any{"enabled": false},
+		"browser":                    map[string]any{"custom_chrome_frame": false},
 	})
 	return os.WriteFile(prefs, data, 0o600)
+}
+
+// useSystemFrame liga a barra de título do sistema no perfil já existente. Com o quadro próprio do
+// Chrome, no Cinnamon a janela ficava sem barra para arrastar e com uma faixa de sombra vazia
+// em volta do conteúdo. O navegador ainda não está rodando aqui, então pode gravar.
+func useSystemFrame(prefs string) error {
+	raw, err := os.ReadFile(prefs)
+	if err != nil {
+		return err
+	}
+	var data map[string]any
+	if json.Unmarshal(raw, &data) != nil {
+		return nil // perfil ilegível: o Chrome refaz; não vale travar a abertura por isso
+	}
+	browser, _ := data["browser"].(map[string]any)
+	if browser == nil {
+		browser = map[string]any{}
+	}
+	if v, ok := browser["custom_chrome_frame"].(bool); ok && !v {
+		return nil
+	}
+	browser["custom_chrome_frame"] = false
+	data["browser"] = browser
+	out, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(prefs, out, 0o600)
 }

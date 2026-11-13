@@ -3,21 +3,22 @@ import type { HostView } from '@shared/model/types';
 import { t } from '../../i18n/pt-BR';
 import { useHosts } from '../../stores/hosts';
 import { Button } from '../../ui/Button';
-import { FolderIcon, KeyIcon, PlusIcon } from '../../ui/icons';
-import { CredentialsDialog } from './CredentialsDialog';
+import { ChevronLeftIcon, FolderIcon, PlusIcon, ServerIcon } from '../../ui/icons';
+import { toggleSidebar } from '../terminal/commands';
+import { Menu } from '../../ui/Menu';
 import { GroupNameDialog } from './GroupDialogs';
 import { HostForm } from './HostForm';
 import { HostList, mutateHosts } from './HostList';
 import { SearchBox } from './SearchBox';
 import s from './hosts.module.css';
 
-type Open =
-  { kind: 'form'; host: HostView | null } | { kind: 'credentials' } | { kind: 'group' } | null;
+type Open = { kind: 'form'; host: HostView | null } | { kind: 'group' } | null;
 
 export function HostSidebar() {
   const { reload, clear } = useHosts();
   const [open, setOpen] = useState<Open>(null);
   const [query, setQuery] = useState('');
+  const [addMenu, setAddMenu] = useState<HTMLElement | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
   // Montado só com o cofre desbloqueado; ao bloquear, os dados saem da interface.
@@ -33,37 +34,51 @@ export function HostSidebar() {
         <Button
           variant="ghost"
           iconOnly
-          aria-label={t.hosts.manageCredentials}
-          title={t.hosts.manageCredentials}
-          onClick={() => {
-            setOpen({ kind: 'credentials' });
-          }}
+          aria-label={t.sidebar.collapse}
+          title={t.sidebar.collapse}
+          onClick={toggleSidebar}
         >
-          <KeyIcon />
+          <ChevronLeftIcon />
         </Button>
         <Button
           variant="ghost"
           iconOnly
-          aria-label={t.groups.add}
-          title={t.groups.add}
-          onClick={() => {
-            setOpen({ kind: 'group' });
-          }}
-        >
-          <FolderIcon />
-        </Button>
-        <Button
-          variant="ghost"
-          iconOnly
-          aria-label={t.hosts.add}
-          title={t.hosts.add}
-          onClick={() => {
-            setOpen({ kind: 'form', host: null });
+          aria-label={t.hosts.addMenu}
+          title={t.hosts.addMenu}
+          aria-haspopup="menu"
+          aria-expanded={addMenu !== null}
+          onClick={(e) => {
+            const el = e.currentTarget;
+            setAddMenu((cur) => (cur ? null : el));
           }}
         >
           <PlusIcon />
         </Button>
       </div>
+      {addMenu && (
+        <Menu
+          anchor={addMenu}
+          items={[
+            {
+              label: t.hosts.add,
+              icon: <ServerIcon />,
+              onSelect: () => {
+                setOpen({ kind: 'form', host: null });
+              },
+            },
+            {
+              label: t.groups.add,
+              icon: <FolderIcon />,
+              onSelect: () => {
+                setOpen({ kind: 'group' });
+              },
+            },
+          ]}
+          onClose={() => {
+            setAddMenu(null);
+          }}
+        />
+      )}
       <SearchBox
         value={query}
         onChange={setQuery}
@@ -87,9 +102,6 @@ export function HostSidebar() {
           onClose={() => {
             setOpen(null);
           }}
-          onManageCredentials={() => {
-            setOpen({ kind: 'credentials' });
-          }}
         />
       )}
       {open?.kind === 'group' && (
@@ -99,13 +111,6 @@ export function HostSidebar() {
             setOpen(null);
           }}
           onSubmit={(name) => mutateHosts(window.openterminal.groups.create(name, null))}
-        />
-      )}
-      {open?.kind === 'credentials' && (
-        <CredentialsDialog
-          onClose={() => {
-            setOpen(null);
-          }}
         />
       )}
     </div>

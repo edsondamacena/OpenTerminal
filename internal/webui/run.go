@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -35,6 +36,11 @@ func Run(assets fs.FS, dataDir string) (bool, error) {
 	}
 	lock, err := lockInstance(dataDir)
 	if err != nil {
+		// Backend anterior ainda vivo (a janela acabou de fechar e ele espera alguns segundos
+		// por um F5): em vez de desistir, abre uma janela nova apontando para ele.
+		if reopenErr := reopen(browser, dataDir); reopenErr == nil {
+			return true, nil
+		}
 		return true, err
 	}
 	defer lock.Close()
@@ -76,6 +82,10 @@ func Run(assets fs.FS, dataDir string) (bool, error) {
 		_ = server.Close()
 	}()
 
+	urlFile := filepath.Join(dataDir, "instance.url")
+	_ = os.WriteFile(urlFile, []byte(server.URL()), 0o600)
+	defer os.Remove(urlFile)
+
 	cmd, err := browser.Command(server.URL())
 	if err != nil {
 		return true, err
@@ -83,6 +93,7 @@ func Run(assets fs.FS, dataDir string) (bool, error) {
 	if err := cmd.Start(); err != nil {
 		return true, fmt.Errorf("abrir %s: %w", browser.Name, err)
 	}
+	go maximiseWhenMapped()
 	exited := make(chan struct{})
 	go func() { _ = cmd.Wait(); close(exited) }()
 	defer func() {
@@ -158,4 +169,49 @@ func emit(server *Server, name string, payload any) {
 	if server != nil {
 		server.Emit(name, payload)
 	}
+}
+
+// maximiseWhenMapped maximiza a janela do app assim que ela aparece. No Cinnamon (Muffin) o
+// Chromium liga a barra de título do sistema depois de mapear a janela e o quadro fica errado:
+// a barra vai para baixo do conteúdo (faixa vazia) e não sobra onde arrastar. Maximizar refaz o
+// quadro, e restaurar depois mantém tudo certo. Usa o wmctrl se existir; sem ele, nada muda.
+// --start-maximized não serve: o Chromium prefere a posição salva no perfil.
+func maximiseWhenMapped() {
+	wmctrl, err := exec.LookPath("wmctrl")
+	if err != nil {
+		return
+	}
+	for i := 0; i < 40; i++ {
+		time.Sleep(250 * time.Millisecond)
+		out, err := exec.Command(wmctrl, "-lx").Output()
+		if err != nil {
+			return
+		}
+		for _, line := range strings.Split(string(out), "\n") {
+			f := strings.Fields(line)
+			if len(f) >= 3 && strings.HasSuffix(f[2], ".OpenTerminal") {
+				_ = exec.Command(wmctrl, "-ir", f[0], "-b", "add,maximized_vert,maximized_horz").Run()
+				return
+			}
+		}
+	}
+}
+
+// reopen abre uma janela para o backend que já está rodando, pelo endereço que ele deixou.
+func reopen(browser Browser, dataDir string) error {
+	url, err := os.ReadFile(filepath.Join(dataDir, "instance.url"))
+	if err != nil || len(url) == 0 {
+		return errors.New("sem endereço da instância aberta")
+	}
+	cmd, err := browser.Command(strings.TrimSpace(string(url)))
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go maximiseWhenMapped()
+	go func() { _ = cmd.Wait() }()
+	time.Sleep(3 * time.Second) // dá tempo de o Chromium repassar a janela e de maximizar
+	return nil
 }
