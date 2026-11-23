@@ -81,7 +81,7 @@ func importEntries(c *model.Content, entries []tabby.Entry, now string) TabbyImp
 			AuthMethod: model.AuthAsk, Protocol: model.Protocol(e.Protocol), LegacyAlgorithms: e.Legacy,
 		}
 		// Valida antes de criar grupo e credencial: host recusado não deixa sobra no cofre.
-		if !domain.IsValidAddress(address) || e.Port < 1 || e.Port > 65535 || (e.Protocol == "ssh" && e.Username == "") {
+		if !domain.IsValidAddress(address) || e.Port < 1 || e.Port > 65535 {
 			r.Invalid++
 			continue
 		}

@@ -15,13 +15,29 @@ describe('takeLines', () => {
 
 describe('selectionSpan', () => {
   it('seleciona na mesma linha, com as pontas em qualquer ordem', () => {
-    expect(selectionSpan({ col: 2, row: 5 }, { col: 6, row: 5 }, 80)).toEqual({ col: 2, row: 5, length: 5 });
-    expect(selectionSpan({ col: 6, row: 5 }, { col: 2, row: 5 }, 80)).toEqual({ col: 2, row: 5, length: 5 });
+    expect(selectionSpan({ col: 2, row: 5 }, { col: 6, row: 5 }, 80)).toEqual({
+      col: 2,
+      row: 5,
+      length: 5,
+    });
+    expect(selectionSpan({ col: 6, row: 5 }, { col: 2, row: 5 }, 80)).toEqual({
+      col: 2,
+      row: 5,
+      length: 5,
+    });
   });
 
   it('atravessa linhas', () => {
-    expect(selectionSpan({ col: 70, row: 1 }, { col: 9, row: 2 }, 80)).toEqual({ col: 70, row: 1, length: 20 });
-    expect(selectionSpan({ col: 9, row: 2 }, { col: 70, row: 1 }, 80)).toEqual({ col: 70, row: 1, length: 20 });
+    expect(selectionSpan({ col: 70, row: 1 }, { col: 9, row: 2 }, 80)).toEqual({
+      col: 70,
+      row: 1,
+      length: 20,
+    });
+    expect(selectionSpan({ col: 9, row: 2 }, { col: 70, row: 1 }, 80)).toEqual({
+      col: 70,
+      row: 1,
+      length: 20,
+    });
   });
 });
 

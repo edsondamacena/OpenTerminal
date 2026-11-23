@@ -86,7 +86,7 @@ function useCommands(): Entry[] {
       run: () => void lock(),
     });
     const hostEntries: Entry[] = hosts.flatMap((host) => {
-      const hint = `${host.username}@${host.address}`;
+      const hint = `${host.username ? `${host.username}@` : ''}${host.address}`;
       return [
         {
           id: `ssh:${host.id}`,

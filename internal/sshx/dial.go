@@ -87,6 +87,13 @@ func Dial(ctx context.Context, o Options, ix session.Interactor) (*Client, error
 	if !model.ValidTerm(o.Term) {
 		o.Term = model.DefaultTerm
 	}
+	if o.Username == "" {
+		user, err := askUsername(o.Address, o.Port, ix)
+		if err != nil {
+			return nil, err
+		}
+		o.Username = user
+	}
 	endpoint := domain.EndpointOf(o.Address, o.Port)
 	known, err := o.KnownHosts.Known(endpoint)
 	if err != nil {

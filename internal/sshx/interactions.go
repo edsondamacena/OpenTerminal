@@ -1,9 +1,11 @@
 package sshx
 
 import (
+	"strconv"
 	"strings"
 
 	"openterminal/internal/apperr"
+	"openterminal/internal/domain"
 	"openterminal/internal/model"
 	"openterminal/internal/session"
 )
@@ -67,4 +69,33 @@ func (a *authState) askPassword() (string, error) {
 		return "", a.failure
 	}
 	return answers[0], nil
+}
+
+// askUsername: host SSH salvo sem usuário. Pergunta antes de abrir a conexão (fora do timeout).
+func askUsername(address string, port int, ix session.Interactor) (string, error) {
+	host := address
+	if strings.Contains(host, ":") {
+		host = "[" + host + "]"
+	}
+	if port != 22 {
+		host += ":" + strconv.Itoa(port)
+	}
+	answers, err := ix.AskPrompt(session.PromptQuestion{Prompts: []session.PromptItem{
+		{Text: "Usuário para " + host + ":", Echo: true},
+	}})
+	if err != nil {
+		return "", err
+	}
+	if answers == nil {
+		return "", apperr.New(apperr.AuthFailed)
+	}
+	user := ""
+	if len(answers) == 1 {
+		user = strings.TrimSpace(answers[0])
+	}
+	if !domain.ValidUsername(user) {
+		return "", apperr.New(apperr.InvalidInput)
+	}
+	ix.SetState(session.StateConnecting)
+	return user, nil
 }

@@ -27,7 +27,7 @@ export function StatusBar() {
   const local = tab?.kind === 'local';
   const canReconnect =
     tab !== null && !local && (tab.state === 'disconnected' || tab.state === 'error');
-  const address = host ? `${host.username}@${host.address}` : null;
+  const address = host ? `${host.username ? `${host.username}@` : ''}${host.address}` : null;
 
   return (
     <footer className={s.bar} aria-label={t.status.label}>

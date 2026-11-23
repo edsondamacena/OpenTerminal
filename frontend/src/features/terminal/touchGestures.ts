@@ -15,14 +15,21 @@ export interface Cell {
 }
 
 /** Converte o deslocamento acumulado do dedo em linhas inteiras; devolve as linhas e a sobra. */
-export function takeLines(accumulated: number, cellHeight: number): { lines: number; rest: number } {
+export function takeLines(
+  accumulated: number,
+  cellHeight: number,
+): { lines: number; rest: number } {
   if (cellHeight <= 0) return { lines: 0, rest: 0 };
   const lines = Math.trunc(accumulated / cellHeight);
   return { lines, rest: accumulated - lines * cellHeight };
 }
 
 /** Início e tamanho para `term.select`, com as pontas em qualquer ordem. */
-export function selectionSpan(a: Cell, b: Cell, cols: number): { col: number; row: number; length: number } {
+export function selectionSpan(
+  a: Cell,
+  b: Cell,
+  cols: number,
+): { col: number; row: number; length: number } {
   const [first, last] = a.row < b.row || (a.row === b.row && a.col <= b.col) ? [a, b] : [b, a];
   return {
     col: first.col,
@@ -33,7 +40,13 @@ export function selectionSpan(a: Cell, b: Cell, cols: number): { col: number; ro
 
 /** Setas para rolar programas de tela cheia; positivo = conteúdo mais abaixo. */
 export function arrowKeys(lines: number, applicationCursor: boolean): string {
-  const key = applicationCursor ? (lines > 0 ? '\x1bOB' : '\x1bOA') : lines > 0 ? '\x1b[B' : '\x1b[A';
+  const key = applicationCursor
+    ? lines > 0
+      ? '\x1bOB'
+      : '\x1bOA'
+    : lines > 0
+      ? '\x1b[B'
+      : '\x1b[A';
   return key.repeat(Math.abs(lines));
 }
 
@@ -47,7 +60,12 @@ export interface GestureOptions {
 }
 
 /** Liga os gestos de um dedo no contêiner do xterm; devolve o desligamento. */
-export function attachTouchGestures({ term, container, write, onCopy }: GestureOptions): () => void {
+export function attachTouchGestures({
+  term,
+  container,
+  write,
+  onCopy,
+}: GestureOptions): () => void {
   let mode: 'pending' | 'scroll' | 'select' | null = null;
   let startX = 0;
   let startY = 0;

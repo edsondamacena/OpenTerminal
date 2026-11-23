@@ -1,6 +1,6 @@
 {
   "name": "openterminal-tooling",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Ferramentas de desenvolvimento e fixtures do OpenTerminal",
   "private": true,
   "license": "MIT",

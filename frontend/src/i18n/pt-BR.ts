@@ -276,6 +276,7 @@ export const t = {
     telnetHint:
       'Telnet não criptografa nada: usuário, senha e comandos passam em texto aberto na rede. Com senha salva, o OpenTerminal responde ao login uma vez.',
     username: 'Usuário',
+    usernameAsk: 'Vazio: o usuário é pedido ao conectar (cada pessoa usa o seu).',
     authMethod: 'Autenticação',
     authPassword: 'Senha',
     authKey: 'Chave privada',

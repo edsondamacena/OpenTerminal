@@ -33,6 +33,9 @@ type HostInput struct {
 	legacySpecified  bool
 }
 
+// ValidUsername diz se o usuário serve para SSH (não vazio, sem espaço nem controle).
+func ValidUsername(u string) bool { return usernameRe.MatchString(u) }
+
 func (in *HostInput) UnmarshalJSON(data []byte) error {
 	type wireInput struct {
 		Label            string           `json:"label"`
@@ -124,8 +127,9 @@ func validateHost(c *model.Content, in HostInput) (HostInput, error) {
 	if !DeviceIcons[in.DeviceIcon] {
 		return in, invalid()
 	}
-	emptyTelnetUser := in.Protocol == model.ProtocolTelnet && in.Username == ""
-	if validate.Int(in.Port, 1, 65535) != nil || (!emptyTelnetUser && !usernameRe.MatchString(in.Username)) {
+	// Usuário vazio: no telnet o equipamento pergunta; no SSH o app pergunta ao conectar
+	// (planilha compartilhada sem login, cada pessoa usa o seu).
+	if validate.Int(in.Port, 1, 65535) != nil || (in.Username != "" && !usernameRe.MatchString(in.Username)) {
 		return in, invalid()
 	}
 	if err := validate.OptionalUUID(in.CredentialID); err != nil {

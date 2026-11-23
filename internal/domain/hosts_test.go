@@ -27,6 +27,16 @@ func TestCreateHost(t *testing.T) {
 	}
 }
 
+func TestCreateHostWithoutUsername(t *testing.T) {
+	in := baseInput()
+	in.Username = ""
+	h, err := CreateHost(testContent(), in, t0)
+	mustOK(t, err)
+	if h.Username != "" {
+		t.Fatalf("usuário: %q", h.Username)
+	}
+}
+
 func TestCreateHostRejects(t *testing.T) {
 	cases := map[string]func(*HostInput){
 		"label vazio":          func(i *HostInput) { i.Label = "   " },
@@ -35,7 +45,6 @@ func TestCreateHostRejects(t *testing.T) {
 		"endereço com espaço":  func(i *HostInput) { i.Address = "a b" },
 		"porta 0":              func(i *HostInput) { i.Port = 0 },
 		"porta 65536":          func(i *HostInput) { i.Port = 65536 },
-		"usuário vazio":        func(i *HostInput) { i.Username = "" },
 		"usuário com espaço":   func(i *HostInput) { i.Username = "de ploy" },
 		"usuário com controle": func(i *HostInput) { i.Username = "a\u0007b" },
 		"usuário > 255":        func(i *HostInput) { i.Username = strings.Repeat("u", 256) },

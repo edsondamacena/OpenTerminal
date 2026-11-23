@@ -109,12 +109,10 @@ export function HostForm({ host, onClose }: HostFormProps) {
   ];
   const portNumber = Number(port);
   const portValid = Number.isInteger(portNumber) && portNumber >= 1 && portNumber <= 65535;
-  // Telnet: há equipamento que só pede a senha.
-  const userOptional = telnet;
+  // Usuário vazio vale: no telnet o equipamento pergunta, no SSH o app pergunta ao conectar.
   const valid =
     label.trim() !== '' &&
     address.trim() !== '' &&
-    (userOptional || username.trim() !== '') &&
     portValid &&
     (method !== 'password' || newPassword !== '' || hasSavedPassword) &&
     (method !== 'key' || keyId !== NONE);
@@ -273,6 +271,7 @@ export function HostForm({ host, onClose }: HostFormProps) {
         <TextField
           label={t.hosts.username}
           value={username}
+          hint={username.trim() === '' ? t.hosts.usernameAsk : undefined}
           onChange={(e) => {
             setUsername(e.target.value);
           }}
@@ -286,7 +285,12 @@ export function HostForm({ host, onClose }: HostFormProps) {
           }}
         />
         {method === 'key' && (
-          <Select label={t.hosts.credential} value={keyId} options={keyOptions} onChange={setKeyId} />
+          <Select
+            label={t.hosts.credential}
+            value={keyId}
+            options={keyOptions}
+            onChange={setKeyId}
+          />
         )}
         {method === 'agent' && <p className={s.hint}>{t.hosts.authAgentHint}</p>}
         {method === 'password' && (
