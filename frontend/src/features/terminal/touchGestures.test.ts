@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrowKeys, selectionSpan, takeLines } from './touchGestures';
+import { arrowKeys, isDoubleTap, selectionSpan, takeLines } from './touchGestures';
 
 describe('takeLines', () => {
   it('converte o arrasto em linhas inteiras e guarda a sobra', () => {
@@ -47,5 +47,15 @@ describe('arrowKeys', () => {
     expect(arrowKeys(-1, false)).toBe('\x1b[A');
     expect(arrowKeys(-2, true)).toBe('\x1bOA\x1bOA');
     expect(arrowKeys(0, true)).toBe('');
+  });
+});
+
+describe('isDoubleTap', () => {
+  it('dois toques rápidos e perto viram TAB; lento, longe ou primeiro toque não', () => {
+    const first = { at: 1000, x: 100, y: 200 };
+    expect(isDoubleTap(first, 1250, 110, 205)).toBe(true);
+    expect(isDoubleTap(first, 1400, 100, 200)).toBe(false);
+    expect(isDoubleTap(first, 1100, 200, 200)).toBe(false);
+    expect(isDoubleTap(null, 1100, 100, 200)).toBe(false);
   });
 });

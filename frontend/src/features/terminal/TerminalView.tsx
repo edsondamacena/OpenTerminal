@@ -224,6 +224,7 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
         void copyText(text).then((ok) => {
           if (ok) toastInfo(t.terminal.copied);
         }),
+      onDoubleTap: () => void api.write(sessionId, '\t'),
     });
 
     let timer: ReturnType<typeof setTimeout> | null = null;

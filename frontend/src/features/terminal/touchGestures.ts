@@ -2,11 +2,28 @@
 // dedo abria o menu de contexto, que colava a área de transferência. Aqui:
 //   arrastar          → rola o histórico (em vim/less/htop manda setas, como o Termux)
 //   segurar e arrastar → seleciona; ao soltar copia
+//   dois toques rápidos → TAB (completa o comando, como no teclado do PC)
 // Dois dedos ficam com a pinça de zoom, tratada em TerminalView.
 import type { Terminal } from '@xterm/xterm';
 
 const LONG_PRESS_MS = 450;
 const MOVE_SLOP_PX = 10;
+const DOUBLE_TAP_MS = 300;
+const DOUBLE_TAP_PX = 40;
+
+/** O segundo toque vale como duplo se veio logo depois e perto do primeiro. */
+export function isDoubleTap(
+  prev: { at: number; x: number; y: number } | null,
+  at: number,
+  x: number,
+  y: number,
+): boolean {
+  return (
+    prev !== null &&
+    at - prev.at <= DOUBLE_TAP_MS &&
+    Math.hypot(x - prev.x, y - prev.y) <= DOUBLE_TAP_PX
+  );
+}
 
 export interface Cell {
   col: number;
@@ -57,6 +74,8 @@ export interface GestureOptions {
   write: (data: string) => void;
   /** Chamado com o texto selecionado quando o dedo sai. */
   onCopy: (text: string) => void;
+  /** Dois toques rápidos no mesmo lugar. */
+  onDoubleTap: () => void;
 }
 
 /** Liga os gestos de um dedo no contêiner do xterm; devolve o desligamento. */
@@ -65,6 +84,7 @@ export function attachTouchGestures({
   container,
   write,
   onCopy,
+  onDoubleTap,
 }: GestureOptions): () => void {
   let mode: 'pending' | 'scroll' | 'select' | null = null;
   let startX = 0;
@@ -73,6 +93,7 @@ export function attachTouchGestures({
   let accumulated = 0;
   let anchor: Cell | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let lastTap: { at: number; x: number; y: number } | null = null;
 
   const cancelTimer = () => {
     if (timer) clearTimeout(timer);
@@ -158,6 +179,19 @@ export function attachTouchGestures({
 
   const onEnd = (e: TouchEvent) => {
     cancelTimer();
+    if (mode === 'pending' && e.touches.length === 0) {
+      // Toque simples (sem arrastar nem segurar): o segundo seguido vira TAB.
+      const now = Date.now();
+      if (isDoubleTap(lastTap, now, startX, startY)) {
+        e.preventDefault(); // sem o duplo clique do xterm, que selecionaria a palavra
+        lastTap = null;
+        onDoubleTap();
+      } else {
+        lastTap = { at: now, x: startX, y: startY };
+      }
+    } else {
+      lastTap = null;
+    }
     if (mode === 'select') {
       e.preventDefault(); // sem o clique sintético, que limparia a seleção
       const text = term.getSelection();

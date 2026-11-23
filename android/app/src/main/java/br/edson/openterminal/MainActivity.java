@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
     private static String coreUrl;
 
     private WebView web;
-    private android.widget.TextView pasteButton;
+    private android.widget.ImageView pasteButton;
     private int pendingId;
     private String pendingSaveName;
     private final Map<String, Uri> saveTargets = new HashMap<>();
@@ -394,7 +394,6 @@ public class MainActivity extends Activity {
 
     // --- Barra de teclas -------------------------------------------------------------------
 
-    private static final int KEY_TEXT = Color.rgb(228, 228, 231);
     private static final int KEY_BG = Color.rgb(39, 39, 42);
     private static final int KEY_BG_PRESSED = Color.rgb(63, 63, 70);
 
@@ -402,23 +401,14 @@ public class MainActivity extends Activity {
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setBackgroundColor(Color.rgb(24, 24, 27));
-        bar.setPadding(dp(8), dp(6), dp(8), dp(6));
-        // Só o essencial: Ctrl+C interrompe o comando; Colar manda o que está copiado no celular.
-        android.widget.TextView interrupt = keyButton("Ctrl+C");
-        interrupt.setOnClickListener(v -> {
-            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-            sendKeys("\u0003");
-        });
-        pasteButton = keyButton("Colar");
-        pasteButton.setOnClickListener(v -> {
-            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-            pasteClipboard();
-        });
-        for (android.widget.TextView b : new android.widget.TextView[]{interrupt, pasteButton}) {
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(40), 1f);
-            lp.setMargins(dp(4), 0, dp(4), 0);
-            bar.addView(b, lp);
-        }
+        bar.setPadding(dp(6), dp(6), dp(6), dp(6));
+        // Ícones: Ctrl+C (interrompe), Colar (área de transferência do celular) e as setas.
+        addKey(bar, R.drawable.key_interrupt, "Ctrl+C", v -> sendKeys("\u0003"));
+        pasteButton = addKey(bar, R.drawable.key_paste, "Colar", v -> pasteClipboard());
+        addKey(bar, R.drawable.key_left, "Seta para a esquerda", v -> sendKeys("\u001b[D"));
+        addKey(bar, R.drawable.key_up, "Seta para cima", v -> sendKeys("\u001b[A"));
+        addKey(bar, R.drawable.key_down, "Seta para baixo", v -> sendKeys("\u001b[B"));
+        addKey(bar, R.drawable.key_right, "Seta para a direita", v -> sendKeys("\u001b[C"));
         android.content.ClipboardManager cm =
                 (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         if (cm != null) cm.addPrimaryClipChangedListener(this::refreshPaste);
@@ -426,17 +416,21 @@ public class MainActivity extends Activity {
         return bar;
     }
 
-    private android.widget.TextView keyButton(String label) {
-        android.widget.TextView b = new android.widget.TextView(this);
-        b.setText(label);
-        b.setTextColor(KEY_TEXT);
-        b.setGravity(Gravity.CENTER);
-        b.setSingleLine(true);
-        b.setTextSize(15);
-        b.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+    private android.widget.ImageView addKey(LinearLayout bar, int icon, String description, View.OnClickListener action) {
+        android.widget.ImageView b = new android.widget.ImageView(this);
+        b.setImageResource(icon);
+        b.setScaleType(android.widget.ImageView.ScaleType.CENTER);
+        b.setContentDescription(description);
         b.setBackground(keyBackground());
         b.setClickable(true);
         b.setFocusable(false);
+        b.setOnClickListener(v -> {
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+            action.onClick(v);
+        });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(42), 1f);
+        lp.setMargins(dp(3), 0, dp(3), 0);
+        bar.addView(b, lp);
         return b;
     }
 
