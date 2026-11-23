@@ -6,6 +6,7 @@ import {
   cssFontFamily,
   schemeOf,
   schemeTheme,
+  solidSelection,
   withAlpha,
 } from './profile';
 
@@ -21,6 +22,15 @@ describe('perfil de terminal (FR-152, FR-156)', () => {
     expect(theme.cursor).toBe(BRAND_SCHEME.cursor);
     expect(theme.red).toBe(BRAND_SCHEME.ansi[1]);
     expect(theme.brightWhite).toBe(BRAND_SCHEME.ansi[15]);
+  });
+
+  it('seleção vira cor sólida com o texto na cor normal', () => {
+    expect(solidSelection('#ffffff38', '#050505')).toBe('#3c3c3c');
+    expect(solidSelection('#44475a', '#282a36')).toBe('#44475a');
+    const theme = schemeTheme(BRAND_SCHEME, DEFAULT_PROFILE);
+    expect(theme.selectionBackground).toBe('#3c3c3c');
+    expect(theme.selectionInactiveBackground).toBe('#3c3c3c');
+    expect(theme.selectionForeground).toBe(BRAND_SCHEME.foreground);
   });
 
   it('opacidade abaixo de 100% vai para o fundo; cor própria do cursor vence a do esquema', () => {

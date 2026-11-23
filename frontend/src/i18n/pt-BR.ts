@@ -233,6 +233,7 @@ export const t = {
     checkUpdate: 'Verificar atualização',
     checkingUpdate: 'Procurando…',
     upToDate: 'Você já está na versão mais nova.',
+    autoUpdating: (v: string) => `Atualizando para a versão ${v}…`,
     updateAvailable: (v: string) => `Versão ${v} disponível`,
     installUpdate: (v: string) => `Atualizar para ${v}`,
     installingUpdate: 'Baixando e conferindo…',

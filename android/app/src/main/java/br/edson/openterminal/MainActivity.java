@@ -60,8 +60,7 @@ public class MainActivity extends Activity {
     private static String coreUrl;
 
     private WebView web;
-    private android.widget.TextView ctrlButton;
-    private boolean ctrlArmed;
+    private android.widget.TextView pasteButton;
     private int pendingId;
     private String pendingSaveName;
     private final Map<String, Uri> saveTargets = new HashMap<>();
@@ -195,6 +194,9 @@ public class MainActivity extends Activity {
             case "saved":
                 finishSave(m.optString("path"));
                 break;
+            case "installapk":
+                installApk(new File(m.optString("path")));
+                break;
             case "openurl":
                 // Login do Google: o app não pode congelar enquanto o navegador está na frente.
                 if ("accounts.google.com".equals(Uri.parse(m.optString("url")).getHost())) LoginService.start(this);
@@ -262,6 +264,51 @@ public class MainActivity extends Activity {
         } finally {
             tmp.delete();
         }
+    }
+
+    // --- Atualização: instala o APK que o núcleo baixou e conferiu (SHA256SUMS) ----------------
+
+    private void installApk(File apk) {
+        if (!getPackageManager().canRequestPackageInstalls()) {
+            // Uma vez só: o Android exige liberar "instalar apps desta fonte" para o OpenTerminal.
+            Toast.makeText(this, "Permita instalar atualizações do OpenTerminal e toque em Atualizar de novo.", Toast.LENGTH_LONG).show();
+            try {
+                startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName())));
+            } catch (ActivityNotFoundException ignored) {
+            }
+            return;
+        }
+        Toast.makeText(this, "Instalando a atualização…", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            android.content.pm.PackageInstaller pi = getPackageManager().getPackageInstaller();
+            android.content.pm.PackageInstaller.SessionParams params =
+                    new android.content.pm.PackageInstaller.SessionParams(
+                            android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+            params.setAppPackageName(getPackageName());
+            if (Build.VERSION.SDK_INT >= 31) {
+                // Sem confirmação quando o próprio OpenTerminal instalou a versão atual.
+                params.setRequireUserAction(android.content.pm.PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED);
+            }
+            try {
+                int id = pi.createSession(params);
+                try (android.content.pm.PackageInstaller.Session session = pi.openSession(id)) {
+                    try (InputStream in = new FileInputStream(apk);
+                         OutputStream out = session.openWrite("base.apk", 0, apk.length())) {
+                        copy(in, out);
+                        session.fsync(out);
+                    }
+                    Intent result = new Intent(this, InstallReceiver.class);
+                    android.app.PendingIntent pending = android.app.PendingIntent.getBroadcast(this, id, result,
+                            android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_MUTABLE);
+                    session.commit(pending.getIntentSender());
+                }
+            } catch (IOException | RuntimeException e) {
+                runOnUiThread(() -> Toast.makeText(this, "Falha ao instalar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            } finally {
+                apk.delete();
+            }
+        }, "install-update").start();
     }
 
     // --- Desbloqueio automático: segredo cifrado com chave do Android Keystore -----------------
@@ -350,82 +397,70 @@ public class MainActivity extends Activity {
     private static final int KEY_TEXT = Color.rgb(228, 228, 231);
     private static final int KEY_BG = Color.rgb(39, 39, 42);
     private static final int KEY_BG_PRESSED = Color.rgb(63, 63, 70);
-    private static final int KEY_ACCENT = Color.rgb(249, 115, 22);
 
     private View buildKeyBar() {
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setBackgroundColor(Color.rgb(24, 24, 27));
-        bar.setPadding(dp(6), dp(5), dp(6), dp(5));
-        // Ctrl arma a próxima letra do teclado; Ctrl+C interrompe; Colar manda a área de
-        // transferência do Android; setas para histórico e edição da linha.
-        String[][] keys = {
-                {"Ctrl", null},
-                {"Ctrl+C", "\u0003"},
-                {"Colar", PASTE},
-                {"←", "\u001b[D"},
-                {"↑", "\u001b[A"},
-                {"↓", "\u001b[B"},
-                {"→", "\u001b[C"},
-        };
-        for (String[] k : keys) {
-            android.widget.TextView b = new android.widget.TextView(this);
-            b.setText(k[0]);
-            b.setTextColor(KEY_TEXT);
-            b.setGravity(Gravity.CENTER);
-            b.setSingleLine(true);
-            boolean arrow = k[0].length() == 1;
-            b.setTextSize(arrow ? 17 : 13);
-            b.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
-            b.setBackground(keyBackground(false));
-            b.setClickable(true);
-            b.setFocusable(false);
-            b.setHapticFeedbackEnabled(true);
-            String seq = k[1];
-            if (seq == null) {
-                ctrlButton = b;
-                b.setOnClickListener(v -> {
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-                    setCtrl(!ctrlArmed);
-                });
-            } else if (PASTE.equals(seq)) {
-                b.setOnClickListener(v -> {
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-                    pasteClipboard();
-                });
-            } else {
-                b.setOnClickListener(v -> {
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-                    sendKeys(seq);
-                });
-            }
-            // Setas estreitas e iguais; os rótulos de texto ganham mais espaço.
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(38), arrow ? 1f : 1.6f);
-            lp.setMargins(dp(3), 0, dp(3), 0);
+        bar.setPadding(dp(8), dp(6), dp(8), dp(6));
+        // Só o essencial: Ctrl+C interrompe o comando; Colar manda o que está copiado no celular.
+        android.widget.TextView interrupt = keyButton("Ctrl+C");
+        interrupt.setOnClickListener(v -> {
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+            sendKeys("\u0003");
+        });
+        pasteButton = keyButton("Colar");
+        pasteButton.setOnClickListener(v -> {
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+            pasteClipboard();
+        });
+        for (android.widget.TextView b : new android.widget.TextView[]{interrupt, pasteButton}) {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(40), 1f);
+            lp.setMargins(dp(4), 0, dp(4), 0);
             bar.addView(b, lp);
         }
+        android.content.ClipboardManager cm =
+                (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (cm != null) cm.addPrimaryClipChangedListener(this::refreshPaste);
+        refreshPaste();
         return bar;
     }
 
-    private android.graphics.drawable.Drawable keyBackground(boolean armed) {
+    private android.widget.TextView keyButton(String label) {
+        android.widget.TextView b = new android.widget.TextView(this);
+        b.setText(label);
+        b.setTextColor(KEY_TEXT);
+        b.setGravity(Gravity.CENTER);
+        b.setSingleLine(true);
+        b.setTextSize(15);
+        b.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        b.setBackground(keyBackground());
+        b.setClickable(true);
+        b.setFocusable(false);
+        return b;
+    }
+
+    /** Colar fica apagado quando não há nada copiado no celular. */
+    private void refreshPaste() {
+        if (pasteButton == null) return;
+        android.content.ClipboardManager cm =
+                (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        boolean has = cm != null && cm.hasPrimaryClip();
+        pasteButton.setEnabled(has);
+        pasteButton.setAlpha(has ? 1f : 0.4f);
+    }
+
+    private android.graphics.drawable.Drawable keyBackground() {
         android.graphics.drawable.GradientDrawable normal = new android.graphics.drawable.GradientDrawable();
-        normal.setCornerRadius(dp(8));
-        normal.setColor(armed ? KEY_ACCENT : KEY_BG);
+        normal.setCornerRadius(dp(10));
+        normal.setColor(KEY_BG);
         android.graphics.drawable.GradientDrawable pressed = new android.graphics.drawable.GradientDrawable();
-        pressed.setCornerRadius(dp(8));
-        pressed.setColor(armed ? KEY_ACCENT : KEY_BG_PRESSED);
+        pressed.setCornerRadius(dp(10));
+        pressed.setColor(KEY_BG_PRESSED);
         android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
         states.addState(new int[]{android.R.attr.state_pressed}, pressed);
         states.addState(new int[]{}, normal);
         return states;
-    }
-
-    private void setCtrl(boolean armed) {
-        if (ctrlButton == null) return;
-        ctrlArmed = armed;
-        ctrlButton.setBackground(keyBackground(armed));
-        ctrlButton.setTextColor(armed ? Color.BLACK : KEY_TEXT);
-        web.evaluateJavascript("window.openterminalKeys&&window.openterminalKeys.ctrl(" + armed + ")", null);
     }
 
     private static final String PASTE = "__paste__";
@@ -461,13 +496,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void ctrlUsed() {
-            runOnUiThread(() -> {
-                ctrlArmed = false;
-                if (ctrlButton != null) {
-                    ctrlButton.setBackground(keyBackground(false));
-                    ctrlButton.setTextColor(KEY_TEXT);
-                }
-            });
+            // Sem tecla Ctrl na barra: nada a desarmar.
         }
     }
 
@@ -477,6 +506,7 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         LoginService.stop(this);
+        refreshPaste();
         // Voltou do segundo plano: o front sincroniza com a nuvem na hora.
         if (web != null) web.evaluateJavascript("window.openterminalResume&&window.openterminalResume()", null);
     }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { startAutoUpdate } from './autoUpdate';
 import { CommandPalette } from '../features/palette/CommandPalette';
 import { ActiveForwardsDialog } from '../features/forwarding/ActiveForwardsDialog';
 import { Sidebar } from '../features/sidebar/Sidebar';
@@ -12,13 +13,7 @@ import { useUi } from '../stores/ui';
 import { subscribeVault, useVault } from '../stores/vault';
 import { useWorkspace } from '../stores/workspace';
 import { Button } from '../ui/Button';
-import {
-  BackIcon,
-  LockIcon,
-  SettingsIcon,
-  TerminalIcon,
-  UnlockIcon,
-} from '../ui/icons';
+import { BackIcon, LockIcon, SettingsIcon, TerminalIcon, UnlockIcon } from '../ui/icons';
 import { useHosts } from '../stores/hosts';
 import { useMobile } from './mobile';
 import { Toasts } from '../ui/Toast';
@@ -46,6 +41,8 @@ export function App() {
   const mobilePane = useWorkspace((w) => w.mobilePane);
   const setMobilePane = useWorkspace((w) => w.setMobilePane);
   const tabCount = useSessions((st) => st.tabs.length);
+
+  useEffect(() => startAutoUpdate(), []);
 
   useEffect(() => {
     subscribeVault();

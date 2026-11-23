@@ -84,6 +84,25 @@ export function withAlpha(hex: string, alpha: number): string {
   return `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${String(alpha)})`;
 }
 
+/**
+ * Seleção sólida: mistura a cor (que pode ter alfa, ex. #ffffff38) com o fundo. No WebGL do
+ * Android a seleção translúcida saía escura e escondia o texto selecionado.
+ */
+export function solidSelection(selection: string, background: string): string {
+  const hex = (s: string) => {
+    const n = parseInt(s.slice(1, 7), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const;
+  };
+  const alpha = selection.length === 9 ? parseInt(selection.slice(7, 9), 16) / 255 : 1;
+  const [sr, sg, sb] = hex(selection);
+  const [br, bg, bb] = hex(background);
+  const mix = (s: number, b: number) =>
+    Math.round(s * alpha + b * (1 - alpha))
+      .toString(16)
+      .padStart(2, '0');
+  return `#${mix(sr, br)}${mix(sg, bg)}${mix(sb, bb)}`;
+}
+
 export function schemeTheme(scheme: ColorScheme, profile: TerminalProfile): ITheme {
   const theme: ITheme = {
     background:
@@ -93,7 +112,10 @@ export function schemeTheme(scheme: ColorScheme, profile: TerminalProfile): IThe
     foreground: scheme.foreground,
     cursor: profile.cursorColor ?? scheme.cursor,
     cursorAccent: scheme.background,
-    selectionBackground: scheme.selection,
+    selectionBackground: solidSelection(scheme.selection, scheme.background),
+    selectionInactiveBackground: solidSelection(scheme.selection, scheme.background),
+    // Texto selecionado sempre legível, qualquer que seja a cor original.
+    selectionForeground: scheme.foreground,
   };
   ANSI_KEYS.forEach((key, i) => {
     const color = scheme.ansi[i];

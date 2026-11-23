@@ -23,6 +23,7 @@ import (
 
 	"openterminal/frontend"
 	"openterminal/internal/bridge"
+	"openterminal/internal/update"
 	"openterminal/internal/webui"
 )
 
@@ -174,6 +175,11 @@ func run(dataDir string) error {
 			return p, err
 		},
 	})
+	// Atualizar: o APK já baixado e conferido (SHA256SUMS) vai para o PackageInstaller do Java.
+	update.Installer = func(path string) error {
+		h.send(request{Op: "installapk", Path: path})
+		return nil
+	}
 	bridge.SetDeviceKeeper(keystore{h})
 	services, err := bridge.NewServices(dataDir)
 	if err != nil {

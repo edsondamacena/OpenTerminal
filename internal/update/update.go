@@ -20,6 +20,10 @@ import (
 	"time"
 )
 
+// Installer instala o arquivo baixado e conferido. No Android o núcleo liga isto ao app Java
+// (PackageInstaller); sem ele não há instalador automático e a tela abre a página da Release.
+var Installer func(path string) error
+
 // Repo é "dono/nome" do repositório no GitHub (troca com -ldflags "-X openterminal/internal/update.Repo=...").
 var Repo = "edsondamacena/OpenTerminal"
 

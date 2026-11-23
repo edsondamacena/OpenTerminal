@@ -4,5 +4,9 @@ package update
 
 import "errors"
 
-// Open: sem instalador automático aqui (Android instala pela página da Release ou pela Play).
-func Open(string) error { return errors.ErrUnsupported }
+func Open(path string) error {
+	if Installer == nil {
+		return errors.ErrUnsupported
+	}
+	return Installer(path)
+}

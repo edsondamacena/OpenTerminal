@@ -40,7 +40,7 @@ func (s *AppService) InstallUpdate(current string) (UpdateResult, error) {
 	if !info.Available {
 		return res, nil
 	}
-	if info.AssetName == "" || runtime.GOOS == "android" {
+	if info.AssetName == "" {
 		s.openURL(ctx, info.PageURL)
 		res.OpenedPage = true
 		return res, nil
