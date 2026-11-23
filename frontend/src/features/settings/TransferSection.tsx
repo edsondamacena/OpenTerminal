@@ -1,4 +1,4 @@
-// Importar/Exportar: Tabby, planilha CSV e backup cifrado (.otbackup). Só funciona com o cofre
+// Importar/Exportar: planilha CSV e backup cifrado (.otbackup). Só funciona com o cofre
 // aberto; os resumos mostram contagens, nunca nomes, endereços ou senhas.
 import { useState } from 'react';
 import { t } from '../../i18n/pt-BR';
@@ -6,11 +6,12 @@ import { useHosts } from '../../stores/hosts';
 import { useVault } from '../../stores/vault';
 import { Button } from '../../ui/Button';
 import { Dialog } from '../../ui/Dialog';
+import { Segmented } from '../../ui/Segmented';
 import { TextField } from '../../ui/TextField';
 import { toastError, toastInfo } from '../../ui/Toast';
 import s from './settings.module.css';
 
-type Busy = 'tabby' | 'csv' | 'backup' | null;
+type Busy = 'csv' | null;
 
 export function TransferSection() {
   const unlocked = useVault((v) => v.status?.state === 'unlocked');
@@ -19,18 +20,6 @@ export function TransferSection() {
   const [dialog, setDialog] = useState<'export' | 'import' | null>(null);
 
   if (!unlocked) return <p className={s.notice}>{t.settings.vaultLocked}</p>;
-
-  async function importTabby() {
-    setBusy('tabby');
-    const res = await window.openterminal.hosts.importTabby();
-    setBusy(null);
-    if (!res.ok) {
-      toastError(res.error);
-      return;
-    }
-    toastInfo(t.hosts.importTabbyDone(res.value));
-    await reload();
-  }
 
   async function importCsv() {
     setBusy('csv');
@@ -46,15 +35,6 @@ export function TransferSection() {
 
   return (
     <>
-      <div className={s.group}>
-        <h3 className={s.groupTitle}>{t.transfer.tabbyTitle}</h3>
-        <div className={s.actions}>
-          <Button disabled={busy !== null} onClick={() => void importTabby()}>
-            {t.hosts.importTabby}
-          </Button>
-        </div>
-        <p className={s.hint}>{t.transfer.tabbyHint}</p>
-      </div>
       <div className={s.group}>
         <h3 className={s.groupTitle}>{t.transfer.csvTitle}</h3>
         <div className={s.actions}>
@@ -116,16 +96,20 @@ function BackupPasswordDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const exporting = mode === 'export';
+  // Exportar pergunta antes: com senha (cifrado) ou sem senha (arquivo aberto).
+  const [protect, setProtect] = useState<'yes' | 'no'>('yes');
+  const withPassword = exporting && protect === 'yes';
   const tooShort = Array.from(password).length < 8;
-  const mismatch = exporting && confirmation.length > 0 && confirmation !== password;
-  const valid = exporting ? !tooShort && password === confirmation : password.length > 0;
+  const mismatch = withPassword && confirmation.length > 0 && confirmation !== password;
+  // Importar com a senha vazia vale para backup exportado sem senha.
+  const valid = withPassword ? !tooShort && password === confirmation : true;
 
   async function submit() {
     if (!valid) return;
     setBusy(true);
     setError(null);
     if (exporting) {
-      const res = await window.openterminal.hosts.exportBackup(password);
+      const res = await window.openterminal.hosts.exportBackup(withPassword ? password : '');
       setBusy(false);
       if (!res.ok) {
         setError(res.error.message);
@@ -158,19 +142,41 @@ function BackupPasswordDialog({
         </>
       }
     >
-      <p className={s.hint}>{exporting ? t.transfer.exportWarning : t.transfer.importInfo}</p>
-      <TextField
-        label={t.transfer.backupPassword}
-        secret
-        autoFocus
-        value={password}
-        hint={exporting ? t.vault.minLength : undefined}
-        error={exporting && password.length > 0 && tooShort ? t.vault.minLength : null}
-        onChange={(e) => {
-          setPassword(e.target.value);
-        }}
-      />
       {exporting && (
+        <Segmented
+          label={t.transfer.askPassword}
+          value={protect}
+          options={[
+            { value: 'yes', label: t.transfer.withPassword },
+            { value: 'no', label: t.transfer.withoutPassword },
+          ]}
+          onChange={(v) => {
+            setProtect(v);
+            setError(null);
+          }}
+        />
+      )}
+      <p className={s.hint}>
+        {!exporting
+          ? t.transfer.importInfo
+          : withPassword
+            ? t.transfer.exportWarning
+            : t.transfer.plainWarning}
+      </p>
+      {(withPassword || !exporting) && (
+        <TextField
+          label={exporting ? t.transfer.backupPassword : t.transfer.backupPasswordOptional}
+          secret
+          autoFocus
+          value={password}
+          hint={withPassword ? t.vault.minLength : undefined}
+          error={withPassword && password.length > 0 && tooShort ? t.vault.minLength : null}
+          onChange={(e) => {
+            setPassword(e.target.value);
+          }}
+        />
+      )}
+      {withPassword && (
         <TextField
           label={t.transfer.backupConfirmation}
           secret

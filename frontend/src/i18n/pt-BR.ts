@@ -2,9 +2,6 @@
 
 export const t = {
   transfer: {
-    tabbyTitle: 'Tabby',
-    tabbyHint:
-      'Traz os acessos SSH e telnet do Tabby desta máquina, com grupos e as senhas salvas (arquivo, chaveiro e scripts de login). Rodar de novo não duplica.',
     csvTitle: 'Planilha (CSV)',
     csvImport: 'Importar CSV…',
     csvHint:
@@ -19,16 +16,23 @@ export const t = {
       `Planilha: ${String(r.hosts)} acessos, ${String(r.groups)} grupos e ${String(r.credentials)} senhas importados.` +
       (r.duplicates ? ` ${String(r.duplicates)} já existiam.` : '') +
       (r.invalid ? ` ${String(r.invalid)} linhas ignoradas.` : ''),
-    backupTitle: 'Backup completo (cifrado)',
+    backupTitle: 'Backup completo',
     backupHint:
-      'Acessos, grupos, senhas, chaves, hosts conhecidos e encaminhamentos num arquivo .otbackup cifrado com uma senha sua. Use para levar ao notebook ou guardar cópia. Importar mescla sem duplicar.',
+      'Acessos, grupos, senhas, chaves, hosts conhecidos e encaminhamentos num arquivo .otbackup, cifrado com uma senha sua ou sem senha (você escolhe ao exportar). Use para levar ao notebook ou guardar cópia. Importar mescla sem duplicar.',
     backupExport: 'Exportar backup…',
     backupImport: 'Importar backup…',
     backupPassword: 'Senha do backup',
+    backupPasswordOptional: 'Senha do backup (vazia se foi exportado sem senha)',
     backupConfirmation: 'Confirme a senha do backup',
+    askPassword: 'Proteger o backup com senha?',
+    withPassword: 'Com senha',
+    withoutPassword: 'Sem senha',
+    plainWarning:
+      'Sem senha o arquivo fica aberto: quem tiver acesso a ele lê todas as suas senhas e chaves. Guarde em lugar seguro.',
     exportWarning:
       'O arquivo leva todas as suas senhas e chaves. Sem esta senha ele não abre, e ela não pode ser recuperada.',
-    importInfo: 'Digite a senha usada na exportação e escolha o arquivo .otbackup.',
+    importInfo:
+      'Digite a senha usada na exportação (deixe vazia se o backup foi exportado sem senha) e escolha o arquivo .otbackup.',
     chooseWhere: 'Escolher onde salvar…',
     chooseFile: 'Escolher arquivo…',
     backupSaved: (path: string) => `Backup salvo em ${path}.`,
@@ -271,20 +275,6 @@ export const t = {
     protocol: 'Protocolo',
     telnetHint:
       'Telnet não criptografa nada: usuário, senha e comandos passam em texto aberto na rede. Com senha salva, o OpenTerminal responde ao login uma vez.',
-    importTabby: 'Importar do Tabby',
-    importTabbyDone: (r: {
-      hosts: number;
-      telnet: number;
-      groups: number;
-      credentials: number;
-      noPassword: number;
-      duplicates: number;
-      invalid: number;
-    }) =>
-      `Tabby: ${String(r.hosts)} acessos importados (${String(r.telnet)} telnet), ${String(r.groups)} grupos e ${String(r.credentials)} senhas no cofre.` +
-      (r.noPassword ? ` ${String(r.noPassword)} sem senha (pergunta ao conectar).` : '') +
-      (r.duplicates ? ` ${String(r.duplicates)} já existiam.` : '') +
-      (r.invalid ? ` ${String(r.invalid)} ignorados (endereço ou usuário inválido).` : ''),
     username: 'Usuário',
     authMethod: 'Autenticação',
     authPassword: 'Senha',
@@ -356,6 +346,7 @@ export const t = {
   },
   terminal: {
     newLocal: 'Novo terminal local',
+    copied: 'Copiado',
     newTerminal: 'Novo terminal',
     newLocalHint: 'Botão direito para escolher outro shell',
     emptyTitle: 'Nenhuma sessão aberta',

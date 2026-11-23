@@ -22,10 +22,14 @@ const (
 )
 
 var (
-	ErrNotBackup   = errors.New("o arquivo não é um backup do OpenTerminal")
-	ErrBadPassword = errors.New("senha do backup incorreta ou arquivo alterado")
-	ErrWeak        = fmt.Errorf("a senha do backup precisa de pelo menos %d caracteres", minPassword)
+	ErrNotBackup     = errors.New("o arquivo não é um backup do OpenTerminal")
+	ErrBadPassword   = errors.New("senha do backup incorreta ou arquivo alterado")
+	ErrWeak          = fmt.Errorf("a senha do backup precisa de pelo menos %d caracteres", minPassword)
+	ErrNeedsPassword = errors.New("este backup foi exportado com senha: digite a senha para importar")
 )
+
+// algNone marca o backup exportado sem senha: o conteúdo vai aberto em Plain.
+const algNone = "none"
 
 // Payload é o que vai cifrado. Configurações e perfis de terminal são da máquina e ficam fora.
 type Payload struct {
@@ -46,12 +50,26 @@ type file struct {
 		MemoryKiB uint32 `json:"memoryKiB"`
 		Salt      []byte `json:"salt"`
 	} `json:"kdf"`
-	Data []byte `json:"data"`
+	Data  []byte   `json:"data,omitempty"`
+	Plain *Payload `json:"plain,omitempty"`
 }
 
 // ad amarra os parâmetros do KDF ao conteúdo: trocar um deles faz o Unseal falhar.
 func ad(f *file) []byte {
 	return fmt.Appendf(nil, "%s:v%d|%s|%d|%d|%x", format, f.Version, f.KDF.Alg, f.KDF.Time, f.KDF.MemoryKiB, f.KDF.Salt)
+}
+
+// EncodePlain gera o backup sem senha: qualquer um que tiver o arquivo lê as senhas dos acessos.
+func EncodePlain(p Payload) ([]byte, error) {
+	f := &file{Format: format, Version: version, Plain: &p}
+	f.KDF.Alg = algNone
+	return json.MarshalIndent(f, "", "  ")
+}
+
+// IsEncrypted diz se o arquivo é um backup com senha (falso para sem senha ou arquivo inválido).
+func IsEncrypted(data []byte) bool {
+	var f file
+	return json.Unmarshal(data, &f) == nil && f.Format == format && f.KDF.Alg != algNone
 }
 
 func Encode(p Payload, password string, kdf func(salt []byte) vault.KDFParams) ([]byte, error) {
@@ -76,6 +94,15 @@ func Decode(data []byte, password string) (Payload, error) {
 	var f file
 	if err := json.Unmarshal(data, &f); err != nil || f.Format != format {
 		return Payload{}, ErrNotBackup
+	}
+	if f.Version == version && f.KDF.Alg == algNone {
+		if f.Plain == nil {
+			return Payload{}, ErrNotBackup
+		}
+		return *f.Plain, nil
+	}
+	if password == "" {
+		return Payload{}, ErrNeedsPassword
 	}
 	if f.Version != version || f.KDF.Alg != "argon2id" || f.KDF.Time < 1 || f.KDF.Time > maxTime ||
 		f.KDF.MemoryKiB < 8 || f.KDF.MemoryKiB > maxMemoryKiB || len(f.KDF.Salt) < 16 {

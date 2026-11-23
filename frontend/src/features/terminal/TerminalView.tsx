@@ -1,7 +1,8 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createHighlighter, createLineJoiner } from './highlight';
 import { mapBackspace, mapDelete } from './backspace';
-import { applyCtrl, setActiveWriter } from './mobileKeys';
+import { applyCtrl, copyText, setActiveTerminal } from './mobileKeys';
+import { attachTouchGestures } from './touchGestures';
 import { FitAddon } from '@xterm/addon-fit';
 import { SearchAddon } from '@xterm/addon-search';
 import { Unicode11Addon } from '@xterm/addon-unicode11';
@@ -14,6 +15,8 @@ import { effectiveProfile, useProfiles } from '../../stores/profiles';
 import { useUi } from '../../stores/ui';
 import { useVault } from '../../stores/vault';
 import { fontSizeOf, rememberMobileZoom, useWorkspace } from '../../stores/workspace';
+import { t } from '../../i18n/pt-BR';
+import { toastInfo } from '../../ui/Toast';
 import { ringBell } from './bell';
 import { attach } from './dataBus';
 import { needsConfirm } from './paste';
@@ -165,8 +168,15 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
         if (text) void navigator.clipboard.writeText(text);
       }, 120);
     });
+    // No celular segurar o dedo também dispara `contextmenu`: ali é seleção, não colagem.
+    let lastTouch = 0;
+    const markTouch = () => {
+      lastTouch = Date.now();
+    };
+    container.addEventListener('touchstart', markTouch, { capture: true, passive: true });
     const onContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      if (Date.now() - lastTouch < 1500) return;
       if (!(behavior()?.rightClickPaste ?? true)) return;
       void navigator.clipboard.readText().then((text) => {
         pasteText(sessionId, term, text);
@@ -206,6 +216,15 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
     container.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
     container.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
     container.addEventListener('touchend', onTouchEnd, true);
+    const detachGestures = attachTouchGestures({
+      term,
+      container,
+      write: (data) => void api.write(sessionId, data),
+      onCopy: (text) =>
+        void copyText(text).then((ok) => {
+          if (ok) toastInfo(t.terminal.copied);
+        }),
+    });
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     const observer = new ResizeObserver(() => {
@@ -244,6 +263,8 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
       container.removeEventListener('touchstart', onTouchStart, true);
       container.removeEventListener('touchmove', onTouchMove, true);
       container.removeEventListener('touchend', onTouchEnd, true);
+      container.removeEventListener('touchstart', markTouch, true);
+      detachGestures();
       onData.dispose();
       onBell.dispose();
       detach();
@@ -259,7 +280,13 @@ export function TerminalView({ tab, active, banner }: TerminalViewProps) {
   // Barra de teclas do Android escreve no terminal visível.
   useEffect(() => {
     if (!active) return;
-    return setActiveWriter((data) => void window.openterminal.sessions.write(tab.id, data));
+    return setActiveTerminal({
+      write: (data) => void window.openterminal.sessions.write(tab.id, data),
+      paste: (text) => {
+        const term = termRef.current;
+        if (term) pasteText(tab.id, term, text);
+      },
+    });
   }, [active, tab.id]);
 
   useEffect(() => {

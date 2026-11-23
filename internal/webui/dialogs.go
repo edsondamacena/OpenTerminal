@@ -5,7 +5,9 @@ import (
 	"errors"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -18,7 +20,15 @@ func zenity(ctx context.Context, args ...string) (string, error) {
 	if err != nil {
 		return "", errors.New("instale o zenity para escolher arquivos (sudo apt install zenity)")
 	}
-	out, err := exec.CommandContext(ctx, path, append([]string{"--file-selection"}, args...)...).Output()
+	// Sem janela-mãe o Cinnamon (prevenção de roubo de foco) abre o diálogo atrás do app.
+	if id, ok := appWindowID(); ok {
+		args = append(args, "--attach="+strconv.FormatUint(id, 10))
+	}
+	cmd := exec.CommandContext(ctx, path, append([]string{"--file-selection"}, args...)...)
+	done := make(chan struct{})
+	defer close(done)
+	go raiseDialog(done)
+	out, err := cmd.Output()
 	var exit *exec.ExitError
 	if errors.As(err, &exit) && exit.ExitCode() == 1 {
 		return "", nil
@@ -27,6 +37,57 @@ func zenity(ctx context.Context, args ...string) (string, error) {
 		return "", err
 	}
 	return strings.TrimSuffix(string(out), "\n"), nil
+}
+
+// listWindows devolve as linhas do `wmctrl -lx` (id, mesa, classe, ...); sem wmctrl, nada.
+func listWindows() [][]string {
+	wmctrl, err := exec.LookPath("wmctrl")
+	if err != nil {
+		return nil
+	}
+	out, err := exec.Command(wmctrl, "-lx").Output()
+	if err != nil {
+		return nil
+	}
+	var rows [][]string
+	for _, line := range strings.Split(string(out), "\n") {
+		if f := strings.Fields(line); len(f) >= 3 {
+			rows = append(rows, f)
+		}
+	}
+	return rows
+}
+
+func appWindowID() (uint64, bool) {
+	for _, f := range listWindows() {
+		if strings.HasSuffix(f[2], ".OpenTerminal") {
+			id, err := strconv.ParseUint(f[0], 0, 64)
+			return id, err == nil
+		}
+	}
+	return 0, false
+}
+
+// raiseDialog espera a janela do zenity aparecer e a põe na frente, acima do app.
+func raiseDialog(done <-chan struct{}) {
+	wmctrl, err := exec.LookPath("wmctrl")
+	if err != nil {
+		return
+	}
+	for i := 0; i < 40; i++ {
+		select {
+		case <-done:
+			return
+		case <-time.After(150 * time.Millisecond):
+		}
+		for _, f := range listWindows() {
+			if strings.HasPrefix(strings.ToLower(f[2]), "zenity.") {
+				_ = exec.Command(wmctrl, "-ir", f[0], "-b", "add,above").Run()
+				_ = exec.Command(wmctrl, "-ia", f[0]).Run()
+				return
+			}
+		}
+	}
 }
 
 func dialogArgs(title, dir string, filters []wruntime.FileFilter) []string {

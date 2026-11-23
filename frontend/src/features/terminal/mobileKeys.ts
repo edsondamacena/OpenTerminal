@@ -1,24 +1,33 @@
 // Barra de teclas do Android: o app nativo chama `window.openterminalKeys` para mandar Esc, Tab,
-// setas e para armar o Ctrl, que vale para a próxima tecla do teclado do celular.
+// setas, colar e para armar o Ctrl, que vale para a próxima tecla do teclado do celular.
 
-type Writer = (data: string) => void;
+export interface ActiveTerminal {
+  /** Bytes crus para a sessão (teclas especiais). */
+  write: (data: string) => void;
+  /** Texto colado: passa pelo xterm (colagem entre colchetes) e pela confirmação de várias linhas. */
+  paste: (text: string) => void;
+}
 
 declare global {
   interface Window {
-    openterminalKeys?: { send: (data: string) => void; ctrl: (armed: boolean) => void };
-    /** Ponte do WebView do Android; ausente no desktop. */
-    OpenTerminalAndroid?: { ctrlUsed: () => void };
+    openterminalKeys?: {
+      send: (data: string) => void;
+      paste: (text: string) => void;
+      ctrl: (armed: boolean) => void;
+    };
+    /** Ponte do WebView do Android; ausente no desktop. APK antigo não tem `copy`. */
+    OpenTerminalAndroid?: { ctrlUsed: () => void; copy?: (text: string) => void };
   }
 }
 
-let writer: Writer | null = null;
+let active: ActiveTerminal | null = null;
 let ctrlArmed = false;
 
-/** O terminal ativo registra por onde escrever; devolve o cancelamento. */
-export function setActiveWriter(next: Writer): () => void {
-  writer = next;
+/** O terminal visível se registra; devolve o cancelamento. */
+export function setActiveTerminal(next: ActiveTerminal): () => void {
+  active = next;
   return () => {
-    if (writer === next) writer = null;
+    if (active === next) active = null;
   };
 }
 
@@ -33,8 +42,28 @@ export function applyCtrl(data: string): string {
   return String.fromCharCode(code - 64);
 }
 
+/**
+ * Copia para a área de transferência. No Android vai pela ponte nativa: o
+ * `navigator.clipboard` do WebView falha sem aviso fora de um clique.
+ */
+export async function copyText(text: string): Promise<boolean> {
+  if (!text) return false;
+  const bridge = window.OpenTerminalAndroid;
+  if (bridge?.copy) {
+    bridge.copy(text);
+    return true;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 window.openterminalKeys = {
-  send: (data) => writer?.(data),
+  send: (data) => active?.write(data),
+  paste: (text) => active?.paste(text),
   ctrl: (armed) => {
     ctrlArmed = armed;
   },

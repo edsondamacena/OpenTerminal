@@ -401,7 +401,10 @@ public class MainActivity extends Activity {
                 (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         if (cm == null || !cm.hasPrimaryClip() || cm.getPrimaryClip().getItemCount() == 0) return;
         CharSequence text = cm.getPrimaryClip().getItemAt(0).coerceToText(this);
-        if (text != null && text.length() > 0) sendKeys(text.toString());
+        if (text == null || text.length() == 0) return;
+        // paste() passa pela colagem do xterm (colchetes e confirmação de várias linhas).
+        String js = JSONObject.quote(text.toString());
+        web.evaluateJavascript("(function(k,t){if(!k)return;(k.paste||k.send)(t);})(window.openterminalKeys," + js + ")", null);
     }
 
     private void sendKeys(String seq) {
@@ -413,6 +416,15 @@ public class MainActivity extends Activity {
     }
 
     private class JsBridge {
+        @JavascriptInterface
+        public void copy(String text) {
+            runOnUiThread(() -> {
+                android.content.ClipboardManager cm =
+                        (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("OpenTerminal", text));
+            });
+        }
+
         @JavascriptInterface
         public void ctrlUsed() {
             runOnUiThread(() -> {

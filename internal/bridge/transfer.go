@@ -30,16 +30,23 @@ type BackupImportResult struct {
 	Invalid      int `json:"invalid"`
 }
 
-// ExportBackup grava o .otbackup onde o usuário escolher. Devolve o caminho, ou "" se cancelou.
+// ExportBackup grava o .otbackup onde o usuário escolher. Senha vazia exporta sem cifrar (o
+// usuário escolheu assim na tela). Devolve o caminho, ou "" se cancelou.
 func (s *HostService) ExportBackup(password string) (string, error) {
 	content, err := s.store.Read()
 	if err != nil {
 		return "", clean(err)
 	}
-	data, err := backup.Encode(backup.Payload{
+	payload := backup.Payload{
 		CreatedAt: domain.Now(), Groups: content.Groups, Hosts: content.Hosts, Credentials: content.Credentials,
 		KnownHosts: content.KnownHosts, ForwardRules: content.ForwardRules,
-	}, password, s.kdf)
+	}
+	var data []byte
+	if password == "" {
+		data, err = backup.EncodePlain(payload)
+	} else {
+		data, err = backup.Encode(payload, password, s.kdf)
+	}
 	if errors.Is(err, backup.ErrWeak) {
 		return "", &apperr.Error{Code: apperr.WeakPassword, Message: err.Error()}
 	}
@@ -68,7 +75,7 @@ func (s *HostService) ImportBackup(password string) (BackupImportResult, error) 
 	}
 	payload, err := backup.Decode(data, password)
 	switch {
-	case errors.Is(err, backup.ErrBadPassword):
+	case errors.Is(err, backup.ErrBadPassword), errors.Is(err, backup.ErrNeedsPassword):
 		return BackupImportResult{}, &apperr.Error{Code: apperr.VaultBadPassword, Message: err.Error()}
 	case err != nil:
 		return BackupImportResult{}, &apperr.Error{Code: apperr.InvalidInput, Message: err.Error()}

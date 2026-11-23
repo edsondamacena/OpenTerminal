@@ -44,3 +44,25 @@ func TestRoundTripAndTamper(t *testing.T) {
 		t.Fatal("arquivo estranho aceito")
 	}
 }
+
+func TestPlainBackup(t *testing.T) {
+	p := Payload{Hosts: []model.Host{{ID: "h", Label: "OLT"}}}
+	data, err := EncodePlain(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if IsEncrypted(data) {
+		t.Fatal("sem senha marcado como cifrado")
+	}
+	got, err := Decode(data, "")
+	if err != nil || got.Hosts[0].Label != "OLT" {
+		t.Fatalf("%+v %v", got, err)
+	}
+	enc, _ := Encode(p, "senha-do-backup", vault.TestKDF)
+	if !IsEncrypted(enc) {
+		t.Fatal("cifrado não reconhecido")
+	}
+	if _, err := Decode(enc, ""); err != ErrNeedsPassword {
+		t.Fatalf("cifrado sem senha: %v", err)
+	}
+}
