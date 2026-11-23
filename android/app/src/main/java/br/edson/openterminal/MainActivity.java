@@ -26,7 +26,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -61,7 +60,7 @@ public class MainActivity extends Activity {
     private static String coreUrl;
 
     private WebView web;
-    private Button ctrlButton;
+    private android.widget.TextView ctrlButton;
     private boolean ctrlArmed;
     private int pendingId;
     private String pendingSaveName;
@@ -197,6 +196,8 @@ public class MainActivity extends Activity {
                 finishSave(m.optString("path"));
                 break;
             case "openurl":
+                // Login do Google: o app não pode congelar enquanto o navegador está na frente.
+                if ("accounts.google.com".equals(Uri.parse(m.optString("url")).getHost())) LoginService.start(this);
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(m.optString("url"))));
                 } catch (ActivityNotFoundException ignored) {
@@ -346,51 +347,84 @@ public class MainActivity extends Activity {
 
     // --- Barra de teclas -------------------------------------------------------------------
 
+    private static final int KEY_TEXT = Color.rgb(228, 228, 231);
+    private static final int KEY_BG = Color.rgb(39, 39, 42);
+    private static final int KEY_BG_PRESSED = Color.rgb(63, 63, 70);
+    private static final int KEY_ACCENT = Color.rgb(249, 115, 22);
+
     private View buildKeyBar() {
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setBackgroundColor(Color.rgb(24, 24, 27));
-        // Setas ← ↑ → (histórico e edição da linha), as teclas usadas no dia a dia. Para voltar
-        // outras, acrescente aqui: {"ESC", "\u001b"}, {"CTRL", null} (arma o Ctrl), {"TAB", "\t"}...
-        bar.setGravity(Gravity.END);
-        // CTRL arma o Ctrl para a próxima letra do teclado; ^C interrompe direto; COLAR manda o
-        // texto da área de transferência do Android (o Ctrl+V do celular).
+        bar.setPadding(dp(6), dp(5), dp(6), dp(5));
+        // Ctrl arma a próxima letra do teclado; Ctrl+C interrompe; Colar manda a área de
+        // transferência do Android; setas para histórico e edição da linha.
         String[][] keys = {
-                {"CTRL", null},
-                {"^C", "\u0003"},
-                {"COLAR", PASTE},
+                {"Ctrl", null},
+                {"Ctrl+C", "\u0003"},
+                {"Colar", PASTE},
                 {"←", "\u001b[D"},
                 {"↑", "\u001b[A"},
+                {"↓", "\u001b[B"},
                 {"→", "\u001b[C"},
         };
         for (String[] k : keys) {
-            Button b = new Button(this, null, android.R.attr.borderlessButtonStyle);
+            android.widget.TextView b = new android.widget.TextView(this);
             b.setText(k[0]);
-            b.setAllCaps(false);
-            b.setTextColor(Color.rgb(228, 228, 231));
-            b.setMinWidth(0);
-            b.setMinimumWidth(0);
-            b.setPadding(dp(14), 0, dp(14), 0);
-            b.setTextSize(k[0].length() > 2 ? 14 : 20);
+            b.setTextColor(KEY_TEXT);
             b.setGravity(Gravity.CENTER);
+            b.setSingleLine(true);
+            boolean arrow = k[0].length() == 1;
+            b.setTextSize(arrow ? 17 : 13);
+            b.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            b.setBackground(keyBackground(false));
+            b.setClickable(true);
+            b.setFocusable(false);
+            b.setHapticFeedbackEnabled(true);
             String seq = k[1];
             if (seq == null) {
                 ctrlButton = b;
-                b.setOnClickListener(v -> setCtrl(!ctrlArmed));
+                b.setOnClickListener(v -> {
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+                    setCtrl(!ctrlArmed);
+                });
             } else if (PASTE.equals(seq)) {
-                b.setOnClickListener(v -> pasteClipboard());
+                b.setOnClickListener(v -> {
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+                    pasteClipboard();
+                });
             } else {
-                b.setOnClickListener(v -> sendKeys(seq));
+                b.setOnClickListener(v -> {
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+                    sendKeys(seq);
+                });
             }
-            bar.addView(b, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(42)));
+            // Setas estreitas e iguais; os rótulos de texto ganham mais espaço.
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(38), arrow ? 1f : 1.6f);
+            lp.setMargins(dp(3), 0, dp(3), 0);
+            bar.addView(b, lp);
         }
         return bar;
+    }
+
+    private android.graphics.drawable.Drawable keyBackground(boolean armed) {
+        android.graphics.drawable.GradientDrawable normal = new android.graphics.drawable.GradientDrawable();
+        normal.setCornerRadius(dp(8));
+        normal.setColor(armed ? KEY_ACCENT : KEY_BG);
+        android.graphics.drawable.GradientDrawable pressed = new android.graphics.drawable.GradientDrawable();
+        pressed.setCornerRadius(dp(8));
+        pressed.setColor(armed ? KEY_ACCENT : KEY_BG_PRESSED);
+        android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_pressed}, pressed);
+        states.addState(new int[]{}, normal);
+        return states;
     }
 
     private void setCtrl(boolean armed) {
         if (ctrlButton == null) return;
         ctrlArmed = armed;
-        ctrlButton.setTextColor(armed ? Color.rgb(249, 115, 22) : Color.rgb(228, 228, 231));
+        ctrlButton.setBackground(keyBackground(armed));
+        ctrlButton.setTextColor(armed ? Color.BLACK : KEY_TEXT);
         web.evaluateJavascript("window.openterminalKeys&&window.openterminalKeys.ctrl(" + armed + ")", null);
     }
 
@@ -429,7 +463,10 @@ public class MainActivity extends Activity {
         public void ctrlUsed() {
             runOnUiThread(() -> {
                 ctrlArmed = false;
-                if (ctrlButton != null) ctrlButton.setTextColor(Color.rgb(228, 228, 231));
+                if (ctrlButton != null) {
+                    ctrlButton.setBackground(keyBackground(false));
+                    ctrlButton.setTextColor(KEY_TEXT);
+                }
             });
         }
     }
@@ -439,6 +476,7 @@ public class MainActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+        LoginService.stop(this);
         // Voltou do segundo plano: o front sincroniza com a nuvem na hora.
         if (web != null) web.evaluateJavascript("window.openterminalResume&&window.openterminalResume()", null);
     }
